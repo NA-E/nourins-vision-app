@@ -142,6 +142,21 @@
   ::-webkit-scrollbar-track{background:transparent;}
   ::-webkit-scrollbar-thumb{background:rgba(212,175,106,.2);border-radius:2px;}
   ::-webkit-scrollbar-thumb:hover{background:rgba(212,175,106,.35);}
+
+  /* Login view */
+  .lv{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;max-width:420px;padding:48px 28px;}
+  .lv-brand{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:var(--g);letter-spacing:.18em;margin-bottom:6px;}
+  .lv-brand em{font-style:italic;font-weight:300;opacity:.85;}
+  .lv-tag{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--ct);margin-bottom:36px;}
+  .lv-ttl{font-family:'Cormorant Garamond',serif;font-size:26px;font-style:italic;color:var(--cr);line-height:1.2;margin-bottom:20px;text-align:center;}
+  .lv-fld{width:100%;margin-bottom:14px;}
+  .lv-fld label{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--ct);display:block;margin-bottom:5px;}
+  .lv-fld input{width:100%;background:rgba(255,255,255,.04);border:0.5px solid var(--bdrs);border-radius:8px;color:var(--cr);font-size:15px;padding:11px 14px;font-family:'DM Sans',sans-serif;letter-spacing:.02em;}
+  .lv-fld input:focus{outline:none;border-color:var(--g);}
+  .lv-act{width:100%;}
+  .lv-msg{font-size:11px;color:var(--cs);margin-top:14px;text-align:center;line-height:1.6;font-style:italic;}
+  .lv-otp{font-size:11px;color:var(--g);margin-top:10px;cursor:pointer;text-align:center;text-decoration:underline;text-decoration-color:rgba(212,175,106,.4);}
+  .lv-otp:hover{text-decoration-color:var(--g);}
 </style>
 </head>
 <body>
@@ -391,8 +406,54 @@ function saveMs(){const t=document.getElementById('new-ms')?.value?.trim();if(!t
 function saveNum(){const v=parseFloat(document.getElementById('en-v')?.value);if(isNaN(v))return;const p=S.data.projects.find(x=>x.id===S.selId);p.cur=v;S.showEditNum=false;sv();render();}
 function changeStatus(val){const p=S.data.projects.find(x=>x.id===S.selId);if(p){p.status=val;sv();render();}}
 
+// ── LOGIN VIEW ──
+function renderLogin(){
+  const app=document.getElementById('app');
+  app.style.maxWidth='420px';app.style.minHeight='auto';app.style.background='var(--bgs)';
+  app.innerHTML=`<div class="lv">
+    <div class="lv-brand">N O U R I N <em>&</em></div>
+    <div class="lv-tag">her vision · year one</div>
+    <div class="lv-ttl">Sign in to continue</div>
+    <div class="lv-fld"><label>Your email</label><input id="lv-email" type="email" placeholder="you@example.com" autocomplete="email"></div>
+    <div id="lv-otp-fld" style="display:none" class="lv-fld"><label>6-digit code</label><input id="lv-code" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="••••••"></div>
+    <div class="lv-act"><button id="lv-go" class="btn btng" style="width:100%;padding:11px 14px;font-size:13px">Send magic link</button></div>
+    <div id="lv-msg" class="lv-msg"></div>
+    <div id="lv-otp-toggle" class="lv-otp">Use 6-digit code instead</div>
+  </div>`;
+  const email=document.getElementById('lv-email');
+  const code=document.getElementById('lv-code');
+  const go=document.getElementById('lv-go');
+  const msg=document.getElementById('lv-msg');
+  const toggle=document.getElementById('lv-otp-toggle');
+  const otpFld=document.getElementById('lv-otp-fld');
+  let useOtp=false;
+  toggle.onclick=()=>{useOtp=!useOtp;otpFld.style.display=useOtp?'block':'none';go.textContent=useOtp?'Verify code':'Send magic link';toggle.textContent=useOtp?'Use magic link instead':'Use 6-digit code instead';msg.textContent='';};
+  go.onclick=async()=>{
+    const e=email.value.trim();if(!e){msg.textContent='Enter your email.';return;}
+    if(useOtp&&code.value.trim().length===6){
+      msg.textContent='Verifying…';
+      const{error}=await sb.auth.verifyOtp({email:e,token:code.value.trim(),type:'email'});
+      if(error){msg.textContent=error.message;return;}
+      // session set; main flow takes over
+      bootstrap();return;
+    }
+    msg.textContent='Sending…';
+    const{error}=await sb.auth.signInWithOtp({email:e,options:{shouldCreateUser:false}});
+    if(error){msg.textContent=error.message;return;}
+    msg.textContent=useOtp?'Code sent. Check your email.':'Link sent. Check your email and click to sign in.';
+  };
+}
+
 // ── INIT ──
-load();render();
+async function bootstrap(){
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){renderLogin();return;}
+  await loadFromCloud();
+  render();
+  subscribeRealtime();
+}
+sb.auth.onAuthStateChange((event)=>{if(event==='SIGNED_IN'||event==='SIGNED_OUT')bootstrap();});
+bootstrap();
 </script>
 </body>
 </html>
