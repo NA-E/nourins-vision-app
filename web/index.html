@@ -402,25 +402,83 @@ function bindAll(){
   if(ns)ns.onchange=()=>{const f=document.getElementById('np-nf');if(f)f.style.display=ns.value==='yes'?'block':'none';};
 }
 
-function saveProj(catId){
+// ── CLOUD WRITES ──
+// Optimistic: caller mutates S.data then calls write(). On failure: showError + revert.
+let _writeCount=0;
+function _showSaving(on){_writeCount+=on?1:-1;const s=document.getElementById('savi');if(s)s.classList.toggle('on',_writeCount>0);}
+
+async function write(table, op, payload){
+  _showSaving(true);
+  try{
+    let res;
+    if(op==='insert')res=await sb.from(table).insert(payload).select().single();
+    else if(op==='update')res=await sb.from(table).update(payload.values).eq('id',payload.id).select().single();
+    else if(op==='upsert')res=await sb.from(table).upsert(payload).select().single();
+    if(res.error){showError("Couldn't save — tap to retry.",()=>write(table,op,payload));return null;}
+    // Best-effort audit log; non-blocking
+    sb.from('events').insert({actor:'web',op,table_name:table,row_id:res.data.id,after:res.data}).then(()=>{});
+    return res.data;
+  }finally{_showSaving(false);}
+}
+
+function showError(msg,onRetry){
+  let t=document.getElementById('ftoast');
+  if(!t){t=document.createElement('div');t.id='ftoast';t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--bgf);border:0.5px solid var(--g);border-radius:10px;padding:11px 16px;color:var(--cr);font-size:12.5px;z-index:9999;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.5);';document.body.appendChild(t);}
+  t.textContent=msg;t.onclick=()=>{t.remove();if(onRetry)onRetry();};
+  setTimeout(()=>{if(t.parentNode)t.style.opacity='.6';},6000);
+}
+
+async function saveProj(catId){
   const name=document.getElementById('np-n')?.value?.trim();if(!name)return;
   const desc=document.getElementById('np-d')?.value?.trim()||'';
   const isNum=document.getElementById('np-nt')?.value==='yes';
-  S.data.projects.push({id:uid(),catId,name,desc,hasNum:isNum,cur:isNum?(parseFloat(document.getElementById('np-c')?.value)||0):0,tgt:isNum?(parseFloat(document.getElementById('np-t')?.value)||100):100,unit:isNum?(document.getElementById('np-u')?.value||''):'',hasMil:true,hasLog:true,mil:[],log:[],status:'active'});
-  S.addProjCat=null;sv();render();
+  const id=uid();
+  const cur=isNum?(parseFloat(document.getElementById('np-c')?.value)||0):0;
+  const tgt=isNum?(parseFloat(document.getElementById('np-t')?.value)||100):100;
+  const unit=isNum?(document.getElementById('np-u')?.value||''):'';
+  S.data.projects.push({id,catId,name,desc,hasNum:isNum,cur,tgt,unit,hasMil:true,hasLog:true,mil:[],log:[],status:'active'});
+  S.addProjCat=null;render();
+  await write('projects','insert',{id,category_id:catId,name,description:desc,has_num:isNum,cur,tgt,unit,status:'active'});
 }
-function saveEntry(){
+async function saveEntry(){
   const p=S.data.projects.find(x=>x.id===S.selId);
   const date=document.getElementById('ef-d')?.value||today();
   const note=document.getElementById('ef-n')?.value?.trim();if(!note)return;
-  const e={id:uid(),date,note,val:null};
-  if(p.hasNum){const v=parseFloat(document.getElementById('ef-v')?.value);if(!isNaN(v)){e.val=v;p.cur=v;}}
-  p.log.push(e);S.showEntry=false;sv();render();
+  const id=uid();
+  const entry={id,date,note,val:null};
+  if(p.hasNum){
+    const v=parseFloat(document.getElementById('ef-v')?.value);
+    if(!isNaN(v)){entry.val=v;p.cur=v;}
+  }
+  p.log.push(entry);
+  S.showEntry=false;render();
+  await write('log_entries','insert',{id,project_id:p.id,date,note,val:entry.val});
+  if(entry.val!=null) await write('projects','update',{id:p.id,values:{cur:entry.val}});
 }
-function toggleMs(mid){const p=S.data.projects.find(x=>x.id===S.selId);const m=p.mil.find(x=>x.id===mid);if(m){m.d=!m.d;m.dt=m.d?today():null;sv();render();}}
-function saveMs(){const t=document.getElementById('new-ms')?.value?.trim();if(!t)return;const p=S.data.projects.find(x=>x.id===S.selId);p.mil.push({id:uid(),t,d:false,dt:null});S.showAddMs=false;sv();render();}
-function saveNum(){const v=parseFloat(document.getElementById('en-v')?.value);if(isNaN(v))return;const p=S.data.projects.find(x=>x.id===S.selId);p.cur=v;S.showEditNum=false;sv();render();}
-function changeStatus(val){const p=S.data.projects.find(x=>x.id===S.selId);if(p){p.status=val;sv();render();}}
+async function toggleMs(mid){
+  const p=S.data.projects.find(x=>x.id===S.selId);
+  const m=p.mil.find(x=>x.id===mid);if(!m)return;
+  m.d=!m.d;m.dt=m.d?today():null;
+  render();
+  await write('milestones','update',{id:mid,values:{done:m.d,done_at:m.d?new Date().toISOString():null}});
+}
+async function saveMs(){
+  const t=document.getElementById('new-ms')?.value?.trim();if(!t)return;
+  const p=S.data.projects.find(x=>x.id===S.selId);
+  const id=uid();
+  p.mil.push({id,t,d:false,dt:null});S.showAddMs=false;render();
+  await write('milestones','insert',{id,project_id:p.id,title:t,sort_order:p.mil.length,done:false});
+}
+async function saveNum(){
+  const v=parseFloat(document.getElementById('en-v')?.value);if(isNaN(v))return;
+  const p=S.data.projects.find(x=>x.id===S.selId);p.cur=v;S.showEditNum=false;render();
+  await write('projects','update',{id:p.id,values:{cur:v}});
+}
+async function changeStatus(val){
+  const p=S.data.projects.find(x=>x.id===S.selId);if(!p)return;
+  p.status=val;render();
+  await write('projects','update',{id:p.id,values:{status:val}});
+}
 
 // ── LOGIN VIEW ──
 function renderLogin(){
