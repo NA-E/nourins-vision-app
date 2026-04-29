@@ -7,6 +7,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+<!-- Pinned Supabase JS SDK v2.46.1 with SRI -->
+<script
+  src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.46.1/dist/umd/supabase.min.js"
+  integrity="sha384-f0hTybREi6MIGk1gXyD3UFZAL6sgul9hUVIQHUrByVE26aj5oryZvWtlcda66csi"
+  crossorigin="anonymous"></script>
+
+<!-- Strict CSP: only allow connections to our own Supabase project + jsdelivr CDN -->
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net; connect-src 'self' https://YOURPROJECT.supabase.co wss://YOURPROJECT.supabase.co; img-src 'self' data:;">
+
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
   :root{
@@ -141,6 +152,17 @@
 </div>
 
 <script>
+// ─────────────────────────────────────────────────────────────────
+// CONFIG — these two values are public-safe (anon key has no privileged
+// access; RLS protects all data). They are filled in at deploy time.
+// ─────────────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://YOURPROJECT.supabase.co';
+const SUPABASE_ANON_KEY = 'PLACEHOLDER_ANON_KEY';
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true }
+});
+
 const CC={spiritual:'#5DAA8A',fitness:'#C97A7A',career:'#D4AF6A',personal:'#8B72C8',travel:'#C4825C'};
 
 function catSVG(id,col,sz=14){
