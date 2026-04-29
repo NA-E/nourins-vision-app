@@ -162,6 +162,18 @@
     .btns{padding:8px 12px;font-size:12px;}
   }
 
+  .savi{position:absolute;top:18px;right:18px;width:14px;height:14px;opacity:0;transition:opacity .3s;pointer-events:none;}
+  .savi.on{opacity:.85;animation:pulse 1.4s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{transform:scale(.85);opacity:.5}50%{transform:scale(1.15);opacity:1}}
+  .gear{position:absolute;bottom:14px;left:14px;font-size:14px;color:var(--ct);cursor:pointer;opacity:.6;}
+  .gear:hover{opacity:1;color:var(--g);}
+  .drawer{position:fixed;inset:0;background:rgba(6,5,15,.85);display:none;align-items:center;justify-content:center;z-index:9000;}
+  .drawer.on{display:flex;}
+  .drawer-c{background:var(--bgf);border:0.5px solid var(--bdrs);border-radius:14px;padding:24px;width:340px;}
+  .drawer-c h3{font-family:'Cormorant Garamond',serif;color:var(--cr);font-size:20px;font-style:italic;margin-bottom:16px;}
+  .drawer-c .row{margin-bottom:10px;}
+  .import-box{width:100%;height:140px;background:rgba(255,255,255,.04);border:0.5px solid var(--bdr);border-radius:8px;color:var(--cr);font-family:monospace;font-size:11px;padding:8px;}
+
   /* Login view */
   .lv{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;max-width:420px;padding:48px 28px;}
   .lv-brand{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:var(--g);letter-spacing:.18em;margin-bottom:6px;}
@@ -183,6 +195,7 @@
 <div class="app" id="app">
   <div class="sb" id="sidebar"></div>
   <div class="mn" id="main"></div>
+  <svg class="savi" id="savi" width="14" height="14" viewBox="0 0 20 20"><path d="M10 1L11.8 8.2L19 10L11.8 11.8L10 19L8.2 11.8L1 10L8.2 8.2Z" fill="#D4AF6A"/></svg>
 </div>
 
 <script>
@@ -328,6 +341,7 @@ function renderSidebar(){
       }
     }
   });
+  h+=`<div class="gear" data-act="open-drawer" title="Settings">⚙</div>`;
   const el=document.getElementById('sidebar');
   el.innerHTML=h;el.style.backgroundImage=`url("${patURL}")`;el.style.backgroundRepeat='repeat';
 }
@@ -412,6 +426,11 @@ function bindAll(){
     else if(a==='edit-num'){S.showEditNum=true;renderMain();bindAll();}
     else if(a==='cancel-num'){S.showEditNum=false;renderMain();bindAll();}
     else if(a==='save-num'){saveNum();}
+    else if(a==='open-drawer'){openDrawer();}
+    else if(a==='import-data'){importLegacy();}
+    else if(a==='export-data'){exportData();}
+    else if(a==='sign-out'){sb.auth.signOut();}
+    else if(a==='close-drawer'){const d=document.getElementById('drawer');if(d)d.classList.remove('on');}
   };
   app.onchange=e=>{
     const el=e.target.closest('[data-act]');if(!el)return;
@@ -553,6 +572,64 @@ function renderLogin(){
     if(error){msg.textContent=error.message;return;}
     msg.textContent=useOtp?'Code sent. Check your email.':'Link sent. Check your email and click to sign in.';
   };
+}
+
+// ── SETTINGS DRAWER + IMPORT/EXPORT ──
+function openDrawer(){
+  let d=document.getElementById('drawer');
+  if(!d){
+    d=document.createElement('div');d.id='drawer';d.className='drawer';document.body.appendChild(d);
+    d.onclick=e=>{
+      if(e.target===d){d.classList.remove('on');return;}
+      const el=e.target.closest('[data-act]');if(!el)return;
+      const a=el.dataset.act;
+      if(a==='import-data')importLegacy();
+      else if(a==='export-data')exportData();
+      else if(a==='sign-out')sb.auth.signOut();
+      else if(a==='close-drawer')d.classList.remove('on');
+    };
+  }
+  d.innerHTML=`<div class="drawer-c">
+    <h3>Settings</h3>
+    <div class="row"><button class="btn btng btns" data-act="import-data" style="width:100%">Restore my data</button></div>
+    <div class="row"><button class="btn btns" data-act="export-data" style="width:100%">Export data (JSON)</button></div>
+    <div class="row"><button class="btn btns" data-act="sign-out" style="width:100%">Sign out</button></div>
+    <div class="row" style="margin-top:14px;text-align:center"><span data-act="close-drawer" style="font-size:11px;color:var(--ct);cursor:pointer">Close</span></div>
+  </div>`;
+  d.classList.add('on');
+}
+
+async function importLegacy(){
+  const c=document.querySelector('.drawer-c');
+  c.innerHTML=`<h3>Restore from old localStorage</h3>
+    <div class="row" style="font-size:11px;color:var(--cs);line-height:1.6">Paste the JSON you exported from the old dashboard:</div>
+    <textarea id="imp-box" class="import-box" placeholder='{"categories":[...],"projects":[...]}'></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px"><button class="btn btng btns" id="imp-go">Import</button><button class="btn btns" data-act="close-drawer">Cancel</button></div>
+    <div id="imp-msg" style="margin-top:10px;font-size:11px;color:var(--cs)"></div>`;
+  document.getElementById('imp-go').onclick=async()=>{
+    const txt=document.getElementById('imp-box').value.trim();
+    const msg=document.getElementById('imp-msg');
+    let parsed;try{parsed=JSON.parse(txt);}catch{msg.textContent='Invalid JSON.';return;}
+    msg.textContent='Importing…';
+    try{
+      const proj=parsed.projects||[];
+      for(const p of proj){
+        await sb.from('projects').upsert({id:p.id,category_id:p.catId,name:p.name,description:p.desc||'',has_num:!!p.hasNum,cur:Number(p.cur)||0,tgt:Number(p.tgt)||0,unit:p.unit||'',status:p.status||'active'});
+        for(const m of (p.mil||[])) await sb.from('milestones').upsert({id:m.id,project_id:p.id,title:m.t,done:!!m.d,done_at:m.dt?new Date(m.dt+'T00:00:00Z').toISOString():null});
+        for(const l of (p.log||[])) await sb.from('log_entries').upsert({id:l.id,project_id:p.id,date:l.date,note:l.note,val:l.val!=null?Number(l.val):null});
+      }
+      msg.textContent='Imported. Refreshing…';
+      await loadFromCloud();render();
+      setTimeout(()=>{const d=document.getElementById('drawer');if(d)d.classList.remove('on');},700);
+    }catch(e){msg.textContent='Failed: '+e.message;}
+  };
+}
+
+function exportData(){
+  const blob=new Blob([JSON.stringify(S.data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`vision-${today()}.json`;a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 
 // ── INIT ──
