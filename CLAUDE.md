@@ -19,15 +19,14 @@ Anchoring goals: Umrah ($6,300 for 4 — her, parents, son Ibrahim) and Hajj ($2
 
 ## How to run it
 
-The working app file is `web/index.html` — a single self-contained HTML file with no build step. Open it in a browser and it works once you've configured the Supabase credentials. See `docs/deployment.md` for the full setup recipe.
+The working app file is `index.html` — a single self-contained HTML file with no build step. Open it in a browser and it works once you've configured the Supabase credentials. See `docs/deployment.md` for the full setup recipe.
 
 The original localStorage-only version is kept as a local backup outside the repo at `E:/1.Claude Code/_vision-app-legacy-backup/index (4).html`. It was excluded from git history before the first push for privacy (it contained personal seed data). After Nourin completes the import flow (Step 9 in `docs/deployment.md`) and verifies her data in Supabase, the local backup can be deleted.
 
 ## Repository structure
 
 ```
-web/                        — static site deployed to GitHub Pages
-  index.html                — the dashboard (single file)
+index.html                  — the dashboard, served by GitHub Pages from repo root
 supabase/
   migrations/               — Postgres schema, RLS, roles, indexes
   functions/mcp/            — Edge Function MCP server (Deno)

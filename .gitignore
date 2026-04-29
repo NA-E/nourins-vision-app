@@ -15,3 +15,11 @@ deno.lock
 
 # Editor
 *.swp
+
+# Test artifacts (Playwright screenshots, MCP tool temp dirs)
+.playwright-mcp/
+test-*.png
+test-*.jpg
+
+# Supabase CLI temp state
+supabase/.temp/

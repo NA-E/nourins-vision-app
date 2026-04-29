@@ -35,7 +35,7 @@ Supabase Dashboard → Authentication → Settings:
 
 ## 6. Configure web app + deploy to GitHub Pages
 
-In `web/index.html`, replace placeholders near the top of the `<script>` tag:
+In `index.html`, replace placeholders near the top of the `<script>` tag:
 - `SUPABASE_URL = 'https://YOURPROJECT.supabase.co'` → your real URL
 - `SUPABASE_ANON_KEY = 'PLACEHOLDER_ANON_KEY'` → your real anon key
 
@@ -52,7 +52,7 @@ Push to GitHub:
 git push -u origin master
 ```
 
-In repo Settings → Pages: source = `master` branch, folder = `/web`. Wait ~1 min for the green check.
+In repo Settings → Pages: source = `master` branch, folder = `/` (root). Wait ~1 min for the green check.
 
 ## 7. Deploy MCP Edge Function
 
