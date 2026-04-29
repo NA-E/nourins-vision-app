@@ -229,31 +229,47 @@ function dfd(){return{
 // ── STATE ──
 let S={selId:null,data:null,collapsed:{},showEntry:false,showAddMs:false,showEditNum:false,addProjCat:null};
 
-// ── STORAGE (localStorage for self-hosted) ──
-const STORE_KEY='nourin_dashboard_v1';
-function load(){
-  try{
-    const raw=localStorage.getItem(STORE_KEY);
-    if(raw){
-      const d=JSON.parse(raw);
-      // Patch Hajj if old economy value
-      const hj=d.projects&&d.projects.find(x=>x.id==='hajjsave');
-      if(hj&&hj.tgt===17000){
-        hj.tgt=26000;hj.desc='4 persons, standard package — target $26,000. A multi-year vision.';
-        hj.mil=[{id:'ha1',t:'$6,500 — 25%',d:false,dt:null},{id:'ha2',t:'$13,000 — 50%',d:false,dt:null},{id:'ha3',t:'$19,500 — 75%',d:false,dt:null},{id:'ha4',t:'$26,000 — ready to register',d:false,dt:null}];
-      }
-      S.data=d;
-    } else {S.data=dfd();}
-  }catch{S.data=dfd();}
-  sv();
+// ── CLOUD STORAGE ──
+async function loadFromCloud(){
+  // Ensure categories exist for this user
+  const{data:cats,error:e1}=await sb.from('categories').select('*').order('sort_order');
+  if(e1){console.error(e1);return;}
+  if(!cats||cats.length===0){
+    await sb.rpc('seed_categories_for_current_user');
+    return loadFromCloud();
+  }
+
+  const[{data:projects},{data:milestones},{data:logEntries}]=await Promise.all([
+    sb.from('projects').select('*').is('deleted_at',null).order('created_at'),
+    sb.from('milestones').select('*').is('deleted_at',null).order('sort_order'),
+    sb.from('log_entries').select('*').order('date',{ascending:true}),
+  ]);
+
+  // Reshape into the legacy S.data structure the renderer already understands
+  S.data={
+    categories:cats.map(c=>({id:c.id,name:c.name})),
+    projects:(projects||[]).map(p=>({
+      id:p.id,catId:p.category_id,name:p.name,desc:p.description,
+      hasNum:p.has_num,cur:Number(p.cur),tgt:Number(p.tgt),unit:p.unit,
+      hasMil:true,hasLog:true,
+      mil:(milestones||[]).filter(m=>m.project_id===p.id).map(m=>({
+        id:m.id,t:m.title,d:m.done,dt:m.done_at?m.done_at.slice(0,10):null
+      })),
+      log:(logEntries||[]).filter(l=>l.project_id===p.id).map(l=>({
+        id:l.id,date:l.date,note:l.note,val:l.val!=null?Number(l.val):null
+      })),
+      status:p.status
+    }))
+  };
 }
-function sv(){try{localStorage.setItem(STORE_KEY,JSON.stringify(S.data));}catch(e){console.warn('Storage error',e);}}
+
+// uid() now uses crypto.randomUUID() for safer cross-device IDs.
+function uid(){return crypto.randomUUID();}
 
 // ── HELPERS ──
 function getPct(p){if(p.hasNum&&p.tgt>0)return Math.min(100,Math.round(p.cur/p.tgt*100));const t=p.mil.length;if(!t)return 0;return Math.round(p.mil.filter(m=>m.d).length/t*100);}
 function fmt(d){if(!d)return'';try{return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}catch{return d;}}
 function today(){return new Date().toISOString().split('T')[0];}
-function uid(){return Math.random().toString(36).substr(2,8);}
 
 // ── RENDER SIDEBAR ──
 function renderSidebar(){
