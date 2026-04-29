@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Authorize Vision App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#0A0812;color:#F5EDD8;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+.card{max-width:440px;width:100%;padding:44px 32px;border:0.5px solid rgba(212,175,106,.3);border-radius:14px;background:#06050F}
+.brand{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#D4AF6A;letter-spacing:.18em;text-align:center;margin-bottom:6px}
+.brand em{font-weight:300;font-style:italic;opacity:.85}
+.tag{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:#5C5275;text-align:center;margin-bottom:32px}
+h1{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:24px;color:#F5EDD8;text-align:center;margin-bottom:12px}
+.note{font-size:12.5px;color:#A29080;line-height:1.7;text-align:center;margin-bottom:22px;font-weight:300}
+label{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#5C5275;display:block;margin-bottom:6px}
+input{width:100%;padding:11px 14px;background:rgba(255,255,255,.04);border:0.5px solid rgba(212,175,106,.26);border-radius:8px;color:#F5EDD8;font-family:'DM Sans',sans-serif;font-size:13px}
+input:focus{outline:none;border-color:#D4AF6A}
+.btn{width:100%;margin-top:16px;padding:11px;background:#D4AF6A;color:#110800;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-weight:500;font-size:13px;cursor:pointer;letter-spacing:.04em}
+.btn:hover{opacity:.9}
+.fine{margin-top:18px;font-size:10px;color:#5C5275;text-align:center;line-height:1.6}
+.err{margin-top:14px;padding:10px;border:0.5px solid #C97A7A;border-radius:6px;color:#C97A7A;font-size:12px;text-align:center;display:none}
+</style>
+</head>
+<body>
+<form class="card" method="POST"
+      action="https://kfbhhdlpsiwyajkfktqb.supabase.co/functions/v1/mcp/oauth/authorize">
+  <div class="brand">N O U R I N <em>&amp;</em></div>
+  <div class="tag">her vision · year one</div>
+  <h1>Authorize this app</h1>
+  <p class="note">An app is requesting access to your vision dashboard.<br>Paste your Vision App key to approve.</p>
+
+  <label>Vision App key</label>
+  <input name="bearer_token" type="password" autocomplete="off" placeholder="paste your key" autofocus>
+
+  <input type="hidden" name="response_type" id="f_response_type">
+  <input type="hidden" name="client_id" id="f_client_id">
+  <input type="hidden" name="redirect_uri" id="f_redirect_uri">
+  <input type="hidden" name="state" id="f_state">
+  <input type="hidden" name="code_challenge" id="f_code_challenge">
+  <input type="hidden" name="code_challenge_method" id="f_code_challenge_method">
+  <input type="hidden" name="scope" id="f_scope">
+
+  <button class="btn" type="submit">Authorize</button>
+  <div id="err" class="err"></div>
+  <div class="fine">If you didn't initiate this, close this tab.</div>
+</form>
+<script>
+(function () {
+  const params = new URLSearchParams(location.search);
+  const fields = ['response_type','client_id','redirect_uri','state','code_challenge','code_challenge_method','scope'];
+  for (const k of fields) {
+    const el = document.getElementById('f_' + k);
+    if (el) el.value = params.get(k) || '';
+  }
+  // Show error from query string if Supabase function bounced back here
+  const err = params.get('error_description');
+  if (err) { const e = document.getElementById('err'); e.style.display='block'; e.textContent = err; }
+})();
+</script>
+</body></html>

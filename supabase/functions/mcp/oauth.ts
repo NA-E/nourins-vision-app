@@ -65,7 +65,7 @@ export function authorizationServerMetadata(req: Request): Response {
   const base = baseUrl(req);
   return jsonResponse({
     issuer: base,
-    authorization_endpoint: `${base}/oauth/authorize`,
+    authorization_endpoint: `https://na-e.github.io/nourins-vision-app/consent.html`,
     token_endpoint: `${base}/oauth/token`,
     registration_endpoint: `${base}/oauth/register`,
     scopes_supported: ['mcp'],
@@ -87,7 +87,7 @@ export function openidConfigurationMetadata(req: Request): Response {
   const base = baseUrl(req);
   return jsonResponse({
     issuer: base,
-    authorization_endpoint: `${base}/oauth/authorize`,
+    authorization_endpoint: `https://na-e.github.io/nourins-vision-app/consent.html`,
     token_endpoint: `${base}/oauth/token`,
     registration_endpoint: `${base}/oauth/register`,
     scopes_supported: ['mcp'],
@@ -131,6 +131,22 @@ export async function register(req: Request): Promise<Response> {
 // GET: render HTML form with Bearer token field
 // POST: validate Bearer, issue auth code, redirect to redirect_uri
 
+// Consent UI lives on GitHub Pages (Supabase Edge Functions force HTML
+// responses to text/plain + sandbox CSP, so we can't render HTML here).
+// This handler:
+//   - GET: redirects browser to the GH Pages consent page with all params
+//   - POST: validates the bearer token, issues an auth code, redirects back to claude.ai
+const CONSENT_PAGE_URL = 'https://na-e.github.io/nourins-vision-app/consent.html';
+
+function backToConsent(params: Record<string, string>, errorDescription?: string): Response {
+  const target = new URL(CONSENT_PAGE_URL);
+  for (const k of ['response_type', 'client_id', 'redirect_uri', 'state', 'code_challenge', 'code_challenge_method', 'scope']) {
+    if (params[k]) target.searchParams.set(k, params[k]);
+  }
+  if (errorDescription) target.searchParams.set('error_description', errorDescription);
+  return new Response(null, { status: 302, headers: { ...cors, location: target.toString() } });
+}
+
 export async function authorize(req: Request): Promise<Response> {
   const u = new URL(req.url);
   const params = req.method === 'POST'
@@ -138,55 +154,43 @@ export async function authorize(req: Request): Promise<Response> {
     : Object.fromEntries(u.searchParams);
 
   const {
-    response_type, client_id, redirect_uri, state,
-    code_challenge, code_challenge_method, scope,
-    bearer_token, // form field, only present on POST
+    response_type, redirect_uri, code_challenge_method,
+    bearer_token,
   } = params;
 
-  if (response_type !== 'code') return errorPage(400, 'response_type must be "code"');
-  if (!redirect_uri) return errorPage(400, 'redirect_uri required');
+  if (response_type && response_type !== 'code') {
+    return errorResponse(400, 'unsupported_response_type', 'response_type must be "code"');
+  }
+  if (req.method === 'GET' && !redirect_uri) {
+    return errorResponse(400, 'invalid_request', 'redirect_uri required');
+  }
   if (code_challenge_method && code_challenge_method !== 'S256') {
-    return errorPage(400, 'only S256 PKCE supported');
+    return errorResponse(400, 'invalid_request', 'only S256 PKCE supported');
   }
 
-  if (req.method === 'GET') {
-    return new Response(consentHTML({
-      client_id: client_id ?? '',
-      redirect_uri,
-      state: state ?? '',
-      code_challenge: code_challenge ?? '',
-      code_challenge_method: code_challenge_method ?? '',
-      scope: scope ?? 'mcp',
-      response_type,
-    }), { headers: { ...cors, 'content-type': 'text/html; charset=utf-8' } });
-  }
+  // GET: just send the user to the consent page on GH Pages.
+  if (req.method === 'GET') return backToConsent(params);
 
-  // POST — validate the bearer token
+  // POST: validate the bearer the user pasted on the consent page.
+  if (!redirect_uri) {
+    return errorResponse(400, 'invalid_request', 'redirect_uri required');
+  }
   if (!bearer_token || !constantTimeEqual(bearer_token, MCP_BEARER_TOKEN!)) {
-    return new Response(consentHTML({
-      client_id: client_id ?? '',
-      redirect_uri,
-      state: state ?? '',
-      code_challenge: code_challenge ?? '',
-      code_challenge_method: code_challenge_method ?? '',
-      scope: scope ?? 'mcp',
-      response_type,
-      error: 'Invalid key. Check the MCP_BEARER_TOKEN value from your .env.local.',
-    }), { status: 401, headers: { ...cors, 'content-type': 'text/html; charset=utf-8' } });
+    return backToConsent(params, 'Invalid key. Check your MCP_BEARER_TOKEN.');
   }
 
-  // Issue auth code (signed JWT, 5 min TTL, single-use binding to redirect_uri + PKCE)
+  // Issue auth code (signed JWT, 5 min TTL, bound to redirect_uri + PKCE).
   const code = await signJWT({
     typ: 'auth_code',
     sub: NOURIN_USER_ID,
     redirect_uri,
-    code_challenge: code_challenge ?? null,
-    client_id: client_id ?? null,
+    code_challenge: params.code_challenge ?? null,
+    client_id: params.client_id ?? null,
   }, AUTH_CODE_TTL);
 
   const target = new URL(redirect_uri);
   target.searchParams.set('code', code);
-  if (state) target.searchParams.set('state', state);
+  if (params.state) target.searchParams.set('state', params.state);
 
   return new Response(null, { status: 302, headers: { ...cors, location: target.toString() } });
 }
