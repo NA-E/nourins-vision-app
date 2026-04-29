@@ -1,0 +1,23 @@
+# Supabase project config — Vision App
+# Pushed to remote via: `supabase config push`
+project_id = "kfbhhdlpsiwyajkfktqb"
+
+[auth]
+# No public signup. Only Nourin's account exists; new users are added
+# manually via the Auth dashboard if/when ever needed.
+enable_signup = false
+enable_anonymous_sign_ins = false
+
+[auth.email]
+# Disable email/password — we use magic link + OTP only.
+enable_signup = false
+enable_confirmations = false
+double_confirm_changes = true
+secure_password_change = false
+
+# Magic link / OTP — 5-minute expiry, 6-digit codes
+otp_expiry = 300
+otp_length = 6
+
+# Note: magic-link emails and OTP emails are both controlled by these fields.
+# claude.ai mobile sometimes orphans magic links → OTP fallback is the safety net.
