@@ -77,6 +77,32 @@ export function authorizationServerMetadata(req: Request): Response {
   });
 }
 
+// claude.ai's OAuth probe uses /.well-known/openid-configuration (OIDC
+// Discovery) rather than /.well-known/oauth-authorization-server (RFC 8414).
+// We reuse the same metadata and add the OIDC-required fields. Even though
+// we don't actually issue id_tokens, claude.ai uses this purely to discover
+// the authorization/token/registration endpoints — and gives up if the
+// document 404s. So this is the load-bearing endpoint.
+export function openidConfigurationMetadata(req: Request): Response {
+  const base = baseUrl(req);
+  return jsonResponse({
+    issuer: base,
+    authorization_endpoint: `${base}/oauth/authorize`,
+    token_endpoint: `${base}/oauth/token`,
+    registration_endpoint: `${base}/oauth/register`,
+    scopes_supported: ['mcp'],
+    response_types_supported: ['code'],
+    response_modes_supported: ['query'],
+    grant_types_supported: ['authorization_code', 'refresh_token'],
+    code_challenge_methods_supported: ['S256'],
+    token_endpoint_auth_methods_supported: ['none', 'client_secret_post', 'client_secret_basic'],
+    // OIDC-required fields. We don't actually issue id_tokens; these satisfy
+    // discovery validators without committing us to OIDC userinfo flows.
+    subject_types_supported: ['public'],
+    id_token_signing_alg_values_supported: ['HS256'],
+  });
+}
+
 // ============================================================================
 // Dynamic Client Registration (RFC 7591)
 // ============================================================================

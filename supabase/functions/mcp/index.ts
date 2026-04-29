@@ -18,11 +18,32 @@ import { tools, Tool } from './tools/_registry.ts';
 import {
   protectedResourceMetadata,
   authorizationServerMetadata,
+  openidConfigurationMetadata,
   register,
   authorize,
   token,
   isAuthorized,
 } from './oauth.ts';
+import { sql } from './db.ts';
+
+// Best-effort request capture for diagnostics. Fire-and-forget; never blocks.
+async function logAccess(req: Request, status: number, notes?: string): Promise<void> {
+  try {
+    const u = new URL(req.url);
+    await sql`
+      insert into access_log (method, path, query, user_agent, authorization_present, status, notes)
+      values (
+        ${req.method},
+        ${u.pathname},
+        ${u.search},
+        ${req.headers.get('user-agent')},
+        ${req.headers.has('authorization')},
+        ${status},
+        ${notes ?? null}
+      )
+    `;
+  } catch { /* swallow — never fail a request because logging failed */ }
+}
 
 const PROTOCOL_VERSION = '2025-06-18';
 const SERVER_INFO = { name: 'vision-app-mcp', version: '1.0.0' };
@@ -112,7 +133,7 @@ function routeOf(req: Request): string {
   return path;
 }
 
-Deno.serve(async (req: Request): Promise<Response> => {
+async function handle(req: Request): Promise<Response> {
   if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
 
   const route = routeOf(req);
@@ -123,6 +144,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
   if (req.method === 'GET' && route === '/.well-known/oauth-authorization-server') {
     return authorizationServerMetadata(req);
+  }
+  if (req.method === 'GET' && route === '/.well-known/openid-configuration') {
+    return openidConfigurationMetadata(req);
   }
 
   // ───── OAuth flow (no auth required to reach these) ─────
@@ -183,4 +207,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
   return new Response(JSON.stringify(response), {
     headers: { ...cors, 'content-type': 'application/json' },
   });
+}
+
+Deno.serve(async (req: Request): Promise<Response> => {
+  const res = await handle(req);
+  // Fire-and-forget access log (never blocks the response)
+  logAccess(req, res.status).catch(() => {});
+  return res;
 });
