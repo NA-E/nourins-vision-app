@@ -19,9 +19,30 @@ Anchoring goals: Umrah ($6,300 for 4 — her, parents, son Ibrahim) and Hajj ($2
 
 ## How to run it
 
-The whole app is one self-contained HTML file: `index (4).html` (note the space and parentheses — quote the path when scripting). No build step, no dependencies, no tests. Open it in a browser and it works. State persists to `localStorage` under the key `nourin_dashboard_v1`, so her data lives in whatever browser she opens it in.
+The working app file is `web/index.html` — a single self-contained HTML file with no build step. Open it in a browser and it works once you've configured the Supabase credentials. See `docs/deployment.md` for the full setup recipe.
 
-**Be careful with the storage key** — renaming or wiping it loses her real progress. When changing the data schema, add a new migration branch in `load()` (there's already one for an old Hajj target of `17000` → `26000`); do not bump the storage key.
+The original localStorage-only version is preserved at `index (4).html` (root) until Nourin has completed the import flow (Step 9 in `docs/deployment.md`). After import is verified, that file is removed from the repo.
+
+## Repository structure
+
+```
+web/                        — static site deployed to GitHub Pages
+  index.html                — the dashboard (single file)
+supabase/
+  migrations/               — Postgres schema, RLS, roles, indexes
+  functions/mcp/            — Edge Function MCP server (Deno)
+db/
+  seed-from-localstorage.md — one-time import recipe
+docs/
+  deployment.md             — full setup recipe (25 min end-to-end)
+  superpowers/specs/        — architecture design spec
+  superpowers/plans/        — implementation plan
+CLAUDE.md                   — this file
+README.md                   — project summary
+index (4).html              — legacy localStorage version (kept until migration)
+```
+
+**Be careful with the data** — `S.data` is the in-memory state shaped from Supabase reads. On cloud migration, `localStorage` is no longer used; data lives in Postgres with RLS.
 
 ## Architecture (all inside the one HTML file)
 
