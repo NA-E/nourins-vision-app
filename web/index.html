@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nourin — Her Vision</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --g:#D4AF6A;--gl:#EED898;--gd:#7A5A26;
+    --cr:#F5EDD8;--cs:#A29080;--ct:#5C5275;
+    --bg:#0A0812;--bgs:#06050F;--bgc:#110E1C;--bgf:#1A1630;
+    --bdr:rgba(212,175,106,.1);--bdrs:rgba(212,175,106,.26);
+    --sp:#5DAA8A;--fi:#C97A7A;--ca:#D4AF6A;--pe:#8B72C8;--tr:#C4825C;
+  }
+  html,body{height:100%;background:var(--bg);color:var(--cr);font-family:'DM Sans',sans-serif;}
+  body{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
+
+  .app{
+    display:flex;width:100%;max-width:980px;min-height:580px;
+    border-radius:16px;overflow:hidden;
+    border:0.5px solid rgba(212,175,106,.3);
+    box-shadow:0 32px 80px rgba(0,0,0,.7),0 0 0 0.5px rgba(212,175,106,.08) inset;
+  }
+
+  /* ── SIDEBAR ── */
+  .sb{width:228px;flex-shrink:0;border-right:0.5px solid var(--bdr);background:var(--bgs);overflow-y:auto;max-height:580px;}
+  .sb-hd{padding:22px 16px 16px;border-bottom:0.5px solid var(--bdr);position:relative;overflow:hidden;min-height:108px;}
+  .sb-brand{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;color:var(--g);letter-spacing:.18em;position:relative;z-index:2;}
+  .sb-brand em{font-style:italic;font-weight:300;opacity:.85;}
+  .sb-tag{font-size:8px;letter-spacing:.24em;text-transform:uppercase;color:var(--ct);margin-top:4px;position:relative;z-index:2;}
+  .sb-div{display:flex;align-items:center;gap:6px;margin:12px 0 8px;position:relative;z-index:2;}
+  .sb-dl{flex:1;height:0.5px;background:var(--bdr);}
+  .sb-dd{width:6px;height:6px;transform:rotate(45deg);background:var(--g);opacity:.45;flex-shrink:0;}
+  .sb-stat{font-size:9px;color:var(--ct);position:relative;z-index:2;}
+  .sb-pb{height:1px;background:var(--bdr);overflow:hidden;border-radius:1px;margin-top:5px;}
+  .sb-pbf{height:1px;background:var(--g);transition:width .4s;}
+  .ch{display:flex;align-items:center;gap:7px;padding:10px 14px 4px;cursor:pointer;user-select:none;}
+  .ch:hover .ch-nm{color:var(--cs);}
+  .ch-nm{font-size:9px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--ct);flex:1;transition:color .15s;}
+  .ch-arr{font-size:8px;color:var(--ct);}
+  .pi{display:flex;align-items:center;gap:7px;padding:7px 12px 7px 22px;cursor:pointer;border-left:2px solid transparent;transition:all .15s;}
+  .pi:hover{background:rgba(212,175,106,.04);}
+  .pi.sel{background:rgba(212,175,106,.08);}
+  .pi-nm{font-size:12.5px;color:var(--cs);flex:1;font-weight:300;line-height:1.3;}
+  .pi.sel .pi-nm{color:var(--cr);font-weight:400;}
+  .pi-pct{font-size:9px;color:var(--ct);}
+  .pi.sel .pi-pct{color:var(--g);font-weight:500;}
+  .sb-add{padding:5px 14px 5px 22px;font-size:10px;color:var(--ct);cursor:pointer;}
+  .sb-add:hover{color:var(--g);}
+  .sb-form{padding:8px 14px 12px;border-top:0.5px solid var(--bdr);}
+  .sb-form label{font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--ct);display:block;margin:8px 0 3px;}
+  .sb-form input,.sb-form select{width:100%;background:rgba(255,255,255,.04);border:0.5px solid var(--bdr);border-radius:5px;color:var(--cr);font-size:12px;font-family:'DM Sans',sans-serif;padding:5px 8px;}
+  .sb-form input::placeholder{color:var(--ct);}
+
+  /* ── MAIN ── */
+  .mn{flex:1;overflow-y:auto;max-height:580px;padding:24px 26px;background:var(--bg);}
+  .ov-fr{border:0.5px solid var(--bdr);border-radius:12px;padding:22px 20px 18px;position:relative;}
+  .oc{position:absolute;width:16px;height:16px;}
+  .oc.tl{top:-1px;left:-1px;border-top:1.5px solid var(--g);border-left:1.5px solid var(--g);border-radius:12px 0 0 0;}
+  .oc.tr{top:-1px;right:-1px;border-top:1.5px solid var(--g);border-right:1.5px solid var(--g);border-radius:0 12px 0 0;}
+  .oc.bl{bottom:-1px;left:-1px;border-bottom:1.5px solid var(--g);border-left:1.5px solid var(--g);border-radius:0 0 0 12px;}
+  .oc.br{bottom:-1px;right:-1px;border-bottom:1.5px solid var(--g);border-right:1.5px solid var(--g);border-radius:0 0 12px 0;}
+  .ov-ey{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+  .ov-ey-l{height:0.5px;width:18px;background:var(--g);opacity:.5;}
+  .ov-ey-t{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--g);}
+  .ov-ttl{font-family:'Cormorant Garamond',serif;font-size:30px;font-style:italic;color:var(--cr);line-height:1.2;margin-bottom:6px;}
+  .ov-sub{font-size:12px;color:var(--cs);margin-bottom:14px;font-weight:300;}
+  .ov-bar{height:1px;background:var(--bdr);overflow:hidden;margin-bottom:4px;}
+  .ov-barf{height:1px;background:var(--g);}
+  .ov-bl{font-size:9px;color:var(--ct);letter-spacing:.06em;margin-bottom:16px;}
+  .ov-cats{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .ov-cat{padding:13px 14px;border:0.5px solid var(--bdr);border-left:2.5px solid;border-radius:10px;cursor:pointer;background:var(--bgc);transition:background .15s;position:relative;overflow:hidden;}
+  .ov-cat:hover{background:rgba(255,255,255,.03);}
+  .ov-cat-ico{position:absolute;right:8px;bottom:6px;opacity:.1;}
+  .ov-cat-nm{font-size:13px;font-weight:400;color:var(--cr);margin-bottom:2px;}
+  .ov-cat-me{font-size:10px;color:var(--ct);}
+  .ov-cat-br{height:1.5px;border-radius:1px;margin-top:10px;opacity:.5;}
+  .det-ey{font-size:9px;letter-spacing:.2em;text-transform:uppercase;font-weight:500;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+  .det-ttl{font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--cr);line-height:1.2;margin-bottom:6px;}
+  .det-ds{font-size:13px;color:var(--cs);line-height:1.75;margin-bottom:20px;font-weight:300;}
+  .det-tr{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;}
+  .sdiv{display:flex;align-items:center;gap:8px;margin:20px 0 10px;}
+  .sdiv-l{flex:1;height:0.5px;background:var(--bdr);}
+  .sdiv-d{width:7px;height:7px;transform:rotate(45deg);background:var(--g);flex-shrink:0;opacity:.5;border-radius:1px;}
+  .sdiv-t{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--g);}
+  .nb{display:flex;align-items:baseline;gap:7px;margin-bottom:10px;}
+  .nc{font-family:'Cormorant Garamond',serif;font-size:40px;font-weight:300;color:var(--g);line-height:1;}
+  .nt{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--cs);}
+  .nu{font-size:10px;color:var(--ct);letter-spacing:.06em;}
+  .pbb{height:3px;background:var(--bdr);border-radius:2px;overflow:hidden;margin-bottom:4px;}
+  .pbf{height:100%;border-radius:2px;transition:width .4s;}
+  .pp{font-size:10px;color:var(--ct);}
+  .mi{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--bdr);}
+  .mi:last-child{border-bottom:none;}
+  .mg{width:14px;height:14px;transform:rotate(45deg);border:0.5px solid rgba(212,175,106,.3);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;border-radius:2px;}
+  .mg.on{border-color:transparent;}
+  .mg-in{width:7px;height:7px;border-radius:1px;display:none;}
+  .mg.on .mg-in{display:block;}
+  .mt{font-size:13px;color:var(--cs);flex:1;font-weight:300;}
+  .mt.on{color:var(--ct);text-decoration:line-through;}
+  .md{font-size:9px;color:var(--ct);}
+  .li{padding:10px 0;border-bottom:0.5px solid var(--bdr);}
+  .li:last-child{border-bottom:none;}
+  .lh{display:flex;justify-content:space-between;margin-bottom:4px;}
+  .ld{font-family:'Cormorant Garamond',serif;font-size:11px;font-style:italic;color:var(--ct);}
+  .lv{font-size:10px;font-weight:500;color:var(--g);}
+  .ln{font-size:13px;color:var(--cs);line-height:1.7;font-weight:300;}
+  .fb{background:var(--bgf);border:0.5px solid var(--bdr);border-radius:10px;padding:14px;margin-bottom:10px;}
+  .fb label{font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ct);display:block;margin-bottom:4px;}
+  .fb input,.fb textarea,.fb select{width:100%;font-size:13px;font-family:'DM Sans',sans-serif;background:rgba(255,255,255,.04);border:0.5px solid var(--bdr);border-radius:6px;color:var(--cr);padding:7px 10px;}
+  .fb input::placeholder,.fb textarea::placeholder{color:var(--ct);}
+  .fb textarea{height:68px;resize:vertical;}
+  .fb .fr{margin-bottom:10px;}
+  .acts{display:flex;gap:6px;margin-top:8px;}
+  .btn{padding:7px 14px;border:0.5px solid var(--bdrs);border-radius:8px;background:transparent;color:var(--cs);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em;transition:all .15s;}
+  .btn:hover{background:rgba(212,175,106,.08);color:var(--cr);}
+  .btng{background:var(--g);border-color:var(--g);color:#110800;font-weight:500;}
+  .btng:hover{opacity:.9;background:var(--g);}
+  .btns{padding:5px 11px;font-size:11px;}
+  .ssel{font-size:10px;padding:4px 8px;border:0.5px solid var(--bdr);border-radius:8px;background:var(--bgc);color:var(--cs);font-family:'DM Sans',sans-serif;cursor:pointer;}
+  .emp{font-size:12px;color:var(--ct);padding:8px 0;font-style:italic;}
+  .ir{display:flex;gap:6px;align-items:center;margin-top:8px;}
+  .ir input{flex:1;background:rgba(255,255,255,.04);border:0.5px solid var(--bdr);border-radius:6px;color:var(--cr);font-size:13px;padding:6px 10px;font-family:'DM Sans',sans-serif;}
+  .ir input::placeholder{color:var(--ct);}
+  /* Scrollbar */
+  ::-webkit-scrollbar{width:4px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:rgba(212,175,106,.2);border-radius:2px;}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(212,175,106,.35);}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <div class="sb" id="sidebar"></div>
+  <div class="mn" id="main"></div>
+</div>
+
+<script>
+const CC={spiritual:'#5DAA8A',fitness:'#C97A7A',career:'#D4AF6A',personal:'#8B72C8',travel:'#C4825C'};
+
+function catSVG(id,col,sz=14){
+  const p={
+    spiritual:`<path d="M9.5 7A4.8 4.8 0 0 1 4.5 2 4.8 4.8 0 0 0 4.5 12A4.8 4.8 0 0 1 9.5 7Z" fill="${col}"/><circle cx="10" cy="2.5" r="1.1" fill="${col}" opacity=".55"/>`,
+    fitness:`<path d="M7 1C7 1 11 4.5 11 7.8A4 4 0 0 1 7 11.8A4 4 0 0 1 3 7.8C3 4.5 7 1 7 1Z" fill="${col}" opacity=".88"/>`,
+    career:`<path d="M7 0.5L8.8 5.5H14L9.8 8.5L11.5 13.5L7 10.5L2.5 13.5L4.2 8.5L0 5.5H5.2Z" fill="${col}" opacity=".9"/>`,
+    personal:`<path d="M1.5 13V6L7 1.5L12.5 6V13H9V9H5V13Z" fill="${col}" opacity=".8"/>`,
+    travel:`<circle cx="7" cy="6" r="3.8" stroke="${col}" stroke-width="1.3" fill="none"/><line x1="7" y1="9.8" x2="7" y2="13" stroke="${col}" stroke-width="1.2" stroke-linecap="round" opacity=".5"/><line x1="5" y1="13" x2="9" y2="13" stroke="${col}" stroke-width="1.2" stroke-linecap="round" opacity=".5"/>`,
+  };
+  return `<svg width="${sz}" height="${sz}" viewBox="0 0 14 14" fill="none" style="flex-shrink:0">${p[id]||''}</svg>`;
+}
+function starSVG(sz,op){return `<svg width="${sz}" height="${sz}" viewBox="0 0 20 20" fill="none"><path d="M10 1L11.8 8.2L19 10L11.8 11.8L10 19L8.2 11.8L1 10L8.2 8.2Z" fill="#D4AF6A" opacity="${op}"/></svg>`;}
+function sdiv(label){return `<div class="sdiv"><div class="sdiv-l"></div><div class="sdiv-d"></div><span class="sdiv-t">${label}</span><div class="sdiv-l"></div></div>`;}
+
+// ── DEFAULT DATA ──
+function dfd(){return{
+  categories:[
+    {id:'spiritual',name:'Spiritual'},
+    {id:'fitness',name:'Fitness & Health'},
+    {id:'career',name:'Career & Skills'},
+    {id:'personal',name:'Personal & Home'},
+    {id:'travel',name:'Travel & Experience'}
+  ],
+  projects:[
+    {id:'baqarah',catId:'spiritual',name:'Surah al-Baqarah hifdh',desc:'Memorize all 286 ayahs — the spiritual spine of this year.',hasNum:true,cur:0,tgt:286,unit:'ayahs',hasMil:true,hasLog:true,mil:[{id:'a1',t:'First 10 ayahs',d:false,dt:null},{id:'a2',t:'First juz — 40 ayahs',d:false,dt:null},{id:'a3',t:'Halfway — 143 ayahs',d:false,dt:null},{id:'a4',t:'Full surah complete',d:false,dt:null}],log:[],status:'active'},
+    {id:'arabic',catId:'spiritual',name:'Arabic language',desc:'Connects to Quran, hifdh, Hajj, and prayer.',hasNum:false,cur:0,tgt:100,unit:'',hasMil:true,hasLog:true,mil:[{id:'b1',t:'Enroll in a course',d:false,dt:null},{id:'b2',t:'Complete intro level',d:false,dt:null},{id:'b3',t:'Read Quran with basic understanding',d:false,dt:null}],log:[],status:'active'},
+    {id:'tajweed',catId:'spiritual',name:'Tajweed & recitation',desc:'Improve Quran recitation through proper tajweed.',hasNum:false,cur:0,tgt:100,unit:'',hasMil:true,hasLog:true,mil:[{id:'c1',t:'Find and enroll in class',d:false,dt:null},{id:'c2',t:'Basic rules completed',d:false,dt:null}],log:[],status:'active'},
+    {id:'bodycare',catId:'fitness',name:'Body care routine',desc:'Building the best version of my skin — Month 1 foundation active.',hasNum:false,cur:0,tgt:100,unit:'',hasMil:true,hasLog:true,mil:[{id:'d1',t:'Month 1 routine established',d:false,dt:null},{id:'d2',t:'Month 3 — visible results',d:false,dt:null},{id:'d3',t:'Full routine locked in',d:false,dt:null}],log:[],status:'active'},
+    {id:'facecare',catId:'fitness',name:'Face care routine',desc:'Dedicated morning and evening facial skincare.',hasNum:false,cur:0,tgt:100,unit:'',hasMil:true,hasLog:true,mil:[{id:'e1',t:'Morning — 2 weeks consistent',d:false,dt:null},{id:'e2',t:'Evening — 2 weeks consistent',d:false,dt:null},{id:'e3',t:'3 months consistent',d:false,dt:null}],log:[],status:'active'},
+    {id:'haircare',catId:'fitness',name:'Hair care routine',desc:'Wash, condition, oil, protect.',hasNum:false,cur:0,tgt:100,unit:'',hasMil:true,hasLog:true,mil:[{id:'f1',t:'Routine defined and started',d:false,dt:null},{id:'f2',t:'Consistent for 1 month',d:false,dt:null}],log:[],status:'active'},
+    {id:'fitgym',catId:'fitness',name:'Fitness sessions',desc:'Gym, swimming, cycling or HIIT — 3–4x per week.',hasNum:true,cur:0,tgt:48,unit:'sessions',hasMil:true,hasLog:true,mil:[{id:'g1',t:'1 month consistent — 12+ sessions',d:false,dt:null},{id:'g2',t:'3 months consistent',d:false,dt:null},{id:'g3',t:"6 months — a lifestyle",d:false,dt:null}],log:[],status:'active'},
+    {id:'makeup',catId:'fitness',name:'Makeup learning',desc:'Starting with a short in-person intro class.',hasNum:false,cur:0,tgt:100,unit:'',hasMil:true,hasLog:true,mil:[{id:'h1',t:'Research and shortlist classes',d:false,dt:null},{id:'h2',t:'Complete intro class',d:false,dt:null},{id:'h3',t:'Full look done independently',d:false,dt:null}],log:[],status:'active'},
+    {id:'agencymrr',catId:'career',name:'Agency MRR',desc:'Scale from ~$3K to $10K/month stable retainer.',hasNum:true,cur:3000,tgt:10000,unit:'USD / month',hasMil:true,hasLog:true,mil:[{id:'i1',t:'$5K MRR stable',d:false,dt:null},{id:'i2',t:'$7K MRR stable',d:false,dt:null},{id:'i3',t:'$10K MRR stable',d:false,dt:null}],log:[],status:'active'},
+    {id:'serenova',catId:'career',name:'Serenova Home',desc:'Retail — wood & acrylic products. FB page live.',hasNum:false,cur:0,tgt:100,unit:'',hasMil:true,hasLog:true,mil:[{id:'j1',t:'FB page live',d:true,dt:'2026-04'},{id:'j2',t:'Sample products purchased',d:true,dt:'2026-04'},{id:'j3',t:'Automated pipeline running',d:false,dt:null},{id:'j4',t:'First paid sale',d:false,dt:null},{id:'j5',t:'First month consistent revenue',d:false,dt:null}],log:[],status:'active'},
+    {id:'french',catId:'career',name:'French language',desc:'Personal ambition — building toward real fluency.',hasNum:false,cur:0,tgt:100,unit:'',hasMil:true,hasLog:true,mil:[{id:'k1',t:'A1 level completed',d:false,dt:null},{id:'k2',t:'A2 level completed',d:false,dt:null},{id:'k3',t:'Hold a basic conversation',d:false,dt:null}],log:[],status:'active'},
+    {id:'texturepaint',catId:'career',name:'Texture painting',desc:'Creative skill — pairs with coloring practice.',hasNum:false,cur:0,tgt:100,unit:'',hasMil:true,hasLog:true,mil:[{id:'l1',t:'Complete first piece',d:false,dt:null},{id:'l2',t:'Own style emerging',d:false,dt:null}],log:[],status:'active'},
+    {id:'umrahsave',catId:'personal',name:'Umrah savings',desc:'4 persons, standard package — target $6,300.',hasNum:true,cur:0,tgt:6300,unit:'USD saved',hasMil:true,hasLog:true,mil:[{id:'m1',t:'$1,575 — 25%',d:false,dt:null},{id:'m2',t:'$3,150 — 50%',d:false,dt:null},{id:'m3',t:'$4,725 — 75%',d:false,dt:null},{id:'m4',t:'$6,300 — ready to book',d:false,dt:null}],log:[],status:'active'},
+    {id:'hajjsave',catId:'personal',name:'Hajj savings',desc:'4 persons, standard package — target $26,000. A multi-year vision.',hasNum:true,cur:0,tgt:26000,unit:'USD saved',hasMil:true,hasLog:true,mil:[{id:'ha1',t:'$6,500 — 25%',d:false,dt:null},{id:'ha2',t:'$13,000 — 50%',d:false,dt:null},{id:'ha3',t:'$19,500 — 75%',d:false,dt:null},{id:'ha4',t:'$26,000 — ready to register',d:false,dt:null}],log:[],status:'active'},
+    {id:'homedecor',catId:'personal',name:'Home decoration',desc:'Quiet, luxurious home — slow accumulation, refined taste.',hasNum:false,cur:0,tgt:100,unit:'',hasMil:true,hasLog:true,mil:[{id:'n1',t:'Warm lighting setup done',d:false,dt:null},{id:'n2',t:'Living area transformed',d:false,dt:null},{id:'n3',t:'Bedroom sanctuary complete',d:false,dt:null},{id:'n4',t:'Garden started',d:false,dt:null}],log:[],status:'active'},
+    {id:'abaya',catId:'personal',name:'Abaya collection',desc:'Building a beautiful, intentional abaya wardrobe.',hasNum:false,cur:0,tgt:100,unit:'',hasMil:true,hasLog:true,mil:[{id:'o1',t:'Core everyday pieces (3)',d:false,dt:null},{id:'o2',t:'Special occasion piece',d:false,dt:null}],log:[],status:'active'},
+    {id:'driving',catId:'personal',name:'Learn to drive & buy a car',desc:'Independence and mobility — a major life goal.',hasNum:false,cur:0,tgt:100,unit:'',hasMil:true,hasLog:true,mil:[{id:'p1',t:'Enroll in driving lessons',d:false,dt:null},{id:'p2',t:'Pass test — get license',d:false,dt:null},{id:'p3',t:'Buy first car',d:false,dt:null}],log:[],status:'active'},
+    {id:'srimangal',catId:'travel',name:'Srimangal — April 2026',desc:'Paragon Resort, Nazimgarh tea gardens. First trip planned solo.',hasNum:false,cur:100,tgt:100,unit:'',hasMil:true,hasLog:true,mil:[{id:'q1',t:'Planned and booked independently',d:true,dt:'2026-04-20'},{id:'q2',t:'Trip completed',d:true,dt:'2026-04-26'}],log:[{id:'e1',date:'2026-04-26',note:'Ibrahim floated the whole pool solo. Nazimgarh tea gardens were endless. Got soaked in a storm and loved every second. First trip I built from scratch myself.',val:null}],status:'completed'},
+    {id:'nexttrip',catId:'travel',name:'Next trip — Rangamati / Kaptai',desc:'Kaptai Lake, hill tracts, houseboats.',hasNum:false,cur:0,tgt:100,unit:'',hasMil:true,hasLog:true,mil:[{id:'r1',t:'Decide on destination',d:false,dt:null},{id:'r2',t:'Plan and book',d:false,dt:null},{id:'r3',t:'Trip complete',d:false,dt:null}],log:[],status:'active'},
+    {id:'umrahtrip',catId:'travel',name:'Umrah',desc:'Umrah for 4 — mom, dad, Ibrahim, and me.',hasNum:false,cur:0,tgt:100,unit:'',hasMil:true,hasLog:true,mil:[{id:'s1',t:'Savings goal reached ($6,300)',d:false,dt:null},{id:'s2',t:'Agency shortlisted',d:false,dt:null},{id:'s3',t:'Booked and confirmed',d:false,dt:null},{id:'s4',t:'Umrah performed — alhamdulillah',d:false,dt:null}],log:[],status:'active'},
+  ]
+};}
+
+// ── STATE ──
+let S={selId:null,data:null,collapsed:{},showEntry:false,showAddMs:false,showEditNum:false,addProjCat:null};
+
+// ── STORAGE (localStorage for self-hosted) ──
+const STORE_KEY='nourin_dashboard_v1';
+function load(){
+  try{
+    const raw=localStorage.getItem(STORE_KEY);
+    if(raw){
+      const d=JSON.parse(raw);
+      // Patch Hajj if old economy value
+      const hj=d.projects&&d.projects.find(x=>x.id==='hajjsave');
+      if(hj&&hj.tgt===17000){
+        hj.tgt=26000;hj.desc='4 persons, standard package — target $26,000. A multi-year vision.';
+        hj.mil=[{id:'ha1',t:'$6,500 — 25%',d:false,dt:null},{id:'ha2',t:'$13,000 — 50%',d:false,dt:null},{id:'ha3',t:'$19,500 — 75%',d:false,dt:null},{id:'ha4',t:'$26,000 — ready to register',d:false,dt:null}];
+      }
+      S.data=d;
+    } else {S.data=dfd();}
+  }catch{S.data=dfd();}
+  sv();
+}
+function sv(){try{localStorage.setItem(STORE_KEY,JSON.stringify(S.data));}catch(e){console.warn('Storage error',e);}}
+
+// ── HELPERS ──
+function getPct(p){if(p.hasNum&&p.tgt>0)return Math.min(100,Math.round(p.cur/p.tgt*100));const t=p.mil.length;if(!t)return 0;return Math.round(p.mil.filter(m=>m.d).length/t*100);}
+function fmt(d){if(!d)return'';try{return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}catch{return d;}}
+function today(){return new Date().toISOString().split('T')[0];}
+function uid(){return Math.random().toString(36).substr(2,8);}
+
+// ── RENDER SIDEBAR ──
+function renderSidebar(){
+  const ps=S.data.projects;
+  const overall=Math.round(ps.reduce((s,p)=>s+getPct(p),0)/ps.length);
+  const patSVG=`<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36"><path d="M18 3L19.5 16.5L33 18L19.5 19.5L18 33L16.5 19.5L3 18L16.5 16.5Z" fill="rgba(212,175,106,0.055)"/></svg>`;
+  const patURL=`data:image/svg+xml,${encodeURIComponent(patSVG)}`;
+  const decorStars=
+    `<div style="position:absolute;top:10px;right:16px;pointer-events:none">${starSVG(16,.28)}</div>`+
+    `<div style="position:absolute;top:24px;right:36px;pointer-events:none">${starSVG(9,.16)}</div>`+
+    `<div style="position:absolute;bottom:14px;right:12px;pointer-events:none">${starSVG(10,.2)}</div>`+
+    `<div style="position:absolute;bottom:6px;right:34px;pointer-events:none">${starSVG(6,.12)}</div>`+
+    `<div style="position:absolute;top:6px;right:52px;pointer-events:none">${starSVG(7,.1)}</div>`;
+
+  let h=`<div class="sb-hd" style="background-color:rgba(0,0,0,.25)">${decorStars}
+    <div class="sb-brand" style="position:relative;z-index:2">N O U R I N <em>&</em></div>
+    <div class="sb-tag" style="position:relative;z-index:2">her vision · year one</div>
+    <div class="sb-div" style="position:relative;z-index:2"><div class="sb-dl"></div><div class="sb-dd"></div><div class="sb-dl"></div></div>
+    <div class="sb-stat" style="position:relative;z-index:2">${ps.filter(p=>p.status==='completed').length} done · ${ps.length} projects</div>
+    <div class="sb-pb" style="position:relative;z-index:2;margin-top:6px"><div class="sb-pbf" style="width:${overall}%"></div></div>
+    <div class="sb-stat" style="position:relative;z-index:2;margin-top:3px">${overall}% overall</div>
+  </div>`;
+
+  S.data.categories.forEach(c=>{
+    const cps=ps.filter(p=>p.catId===c.id);
+    const col=CC[c.id];const open=S.collapsed[c.id]!==true;
+    h+=`<div class="ch" data-act="toggle-cat" data-cat="${c.id}">${catSVG(c.id,col,9)}<span class="ch-nm">${c.name}</span><span class="ch-arr">${open?'▾':'▸'}</span></div>`;
+    if(open){
+      cps.forEach(p=>{
+        const sel=p.id===S.selId;
+        h+=`<div class="pi${sel?' sel':''}" style="border-left-color:${sel?CC[p.catId]:'transparent'}" data-act="sel" data-proj="${p.id}" data-cat="${p.catId}"><span class="pi-nm">${p.name}</span><span class="pi-pct">${getPct(p)}%</span></div>`;
+      });
+      if(S.addProjCat===c.id){
+        h+=`<div class="sb-form"><label>Name</label><input id="np-n" type="text"><label>Description</label><input id="np-d" type="text"><label>Numeric target?</label><select id="np-nt"><option value="no">No</option><option value="yes">Yes</option></select><div id="np-nf" style="display:none"><label>Start · Target · Unit</label><div style="display:flex;gap:4px;margin-top:3px"><input id="np-c" type="number" value="0" style="width:44px;padding:5px 6px"><input id="np-t" type="number" placeholder="target" style="width:56px;padding:5px 6px"><input id="np-u" type="text" placeholder="unit"></div></div><div class="acts"><button class="btn btng btns" data-act="save-proj" data-cat="${c.id}">Save</button><button class="btn btns" data-act="cancel-add-proj">Cancel</button></div></div>`;
+      } else {
+        h+=`<div class="sb-add" data-act="start-add-proj" data-cat="${c.id}">+ add project</div>`;
+      }
+    }
+  });
+  const el=document.getElementById('sidebar');
+  el.innerHTML=h;el.style.backgroundImage=`url("${patURL}")`;el.style.backgroundRepeat='repeat';
+}
+
+// ── RENDER MAIN ──
+function renderMain(){
+  const m=document.getElementById('main');
+  if(!S.selId){m.innerHTML=vOverview();return;}
+  const p=S.data.projects.find(x=>x.id===S.selId);
+  if(!p){m.innerHTML=vOverview();return;}
+  const col=CC[p.catId];const pct=getPct(p);
+  const catName=S.data.categories.find(c=>c.id===p.catId)?.name||'';
+
+  let numSec='';
+  if(p.hasNum){
+    const ef=S.showEditNum
+      ?`<div style="display:flex;gap:6px;align-items:center;margin-top:10px"><input id="en-v" type="number" value="${p.cur}" style="width:120px;background:rgba(255,255,255,.04);border:0.5px solid rgba(212,175,106,.26);border-radius:6px;color:#F5EDD8;font-size:13px;padding:7px 10px"><button class="btn btng btns" data-act="save-num">Update</button><button class="btn btns" data-act="cancel-num">Cancel</button></div>`
+      :`<button class="btn btns" style="margin-top:8px" data-act="edit-num">Update value</button>`;
+    numSec=`${sdiv('progress')}<div class="nb"><span class="nc">${p.cur.toLocaleString()}</span><span class="nt">/ ${p.tgt.toLocaleString()}</span>${p.unit?`<span class="nu">${p.unit}</span>`:''}</div><div class="pbb"><div class="pbf" style="width:${pct}%;background:${col}"></div></div><div class="pp">${pct}% complete</div>${ef}`;
+  }
+
+  const msItems=p.mil.map(ms=>`<div class="mi"><div class="mg${ms.d?' on':''}" style="${ms.d?`background:${col};border-color:${col}`:''}" data-act="toggle-ms" data-mid="${ms.id}"><div class="mg-in" style="${ms.d?'background:rgba(255,255,255,.9)':''}"></div></div><span class="mt${ms.d?' on':''}">${ms.t}</span><span class="md">${ms.dt?fmt(ms.dt):''}</span></div>`).join('');
+  const addMsR=S.showAddMs?`<div class="ir"><input id="new-ms" type="text" placeholder="New milestone..."><button class="btn btng btns" data-act="save-ms">Add</button><button class="btn btns" data-act="cancel-ms">Cancel</button></div>`:`<button class="btn btns" style="margin-top:6px" data-act="toggle-add-ms">+ milestone</button>`;
+  const doneMsCt=p.mil.filter(m=>m.d).length;
+
+  const logItems=[...p.log].reverse().map(e=>`<div class="li"><div class="lh"><span class="ld">${fmt(e.date)}</span>${e.val!=null?`<span class="lv">${Number(e.val).toLocaleString()} ${p.unit}</span>`:''}</div><div class="ln">${e.note}</div></div>`).join('');
+  const entF=S.showEntry?`<div class="fb"><div class="fr"><label>Date</label><input id="ef-d" type="date" value="${today()}"></div>${p.hasNum?`<div class="fr"><label>Updated value — ${p.unit}</label><input id="ef-v" type="number" value="${p.cur}"></div>`:''}<div class="fr"><label>Note</label><textarea id="ef-n" placeholder="What happened? What did you do?"></textarea></div><div class="acts"><button class="btn btng btns" data-act="save-entry">Save</button><button class="btn btns" data-act="cancel-entry">Cancel</button></div></div>`:`<button class="btn btns" style="margin-bottom:8px" data-act="show-entry">+ log update</button>`;
+
+  const sOpts=['active','paused','completed'].map(s=>`<option value="${s}"${p.status===s?' selected':''}>${s}</option>`).join('');
+  m.innerHTML=`<div class="det-ey" style="color:${col}">${catSVG(p.catId,col,10)}<span>${catName}</span></div>
+    <div class="det-tr"><div class="det-ttl">${p.name}</div><select class="ssel" data-act="change-status">${sOpts}</select></div>
+    <div class="det-ds">${p.desc}</div>
+    ${numSec}
+    ${sdiv(`milestones — ${doneMsCt} of ${p.mil.length}`)}
+    ${msItems}${addMsR}
+    ${sdiv('log')}
+    ${entF}${p.log.length?logItems:`<div class="emp">Nothing logged yet.</div>`}`;
+}
+
+function vOverview(){
+  const ps=S.data.projects;
+  const overall=Math.round(ps.reduce((s,p)=>s+getPct(p),0)/ps.length);
+  const done=ps.filter(p=>p.status==='completed').length;
+  const cats=S.data.categories.map(c=>{
+    const cps=ps.filter(p=>p.catId===c.id);
+    const pct=cps.length?Math.round(cps.reduce((s,p)=>s+getPct(p),0)/cps.length):0;
+    const col=CC[c.id];
+    return`<div class="ov-cat" style="border-left-color:${col}" data-act="ov-cat" data-cat="${c.id}"><div class="ov-cat-ico">${catSVG(c.id,col,36)}</div><div class="ov-cat-nm">${c.name}</div><div class="ov-cat-me">${cps.length} projects · ${pct}%</div><div class="ov-cat-br" style="background:${col};width:${pct}%"></div></div>`;
+  }).join('');
+  return`<div class="ov-fr">
+    <div class="oc tl"></div><div class="oc tr"></div><div class="oc bl"></div><div class="oc br"></div>
+    <div class="ov-ey"><div class="ov-ey-l"></div>${starSVG(10,.6)}<div class="ov-ey-t">my life dashboard · 2026</div>${starSVG(10,.6)}<div class="ov-ey-l"></div></div>
+    <div class="ov-ttl">Building the next<br>version of herself.</div>
+    <div class="ov-sub">${done} of ${ps.length} projects · ${overall}% complete · year one of many</div>
+    <div class="ov-bar"><div class="ov-barf" style="width:${overall}%"></div></div>
+    <div class="ov-bl" style="margin-bottom:16px">${overall}% overall · select any project in the sidebar</div>
+    <div class="ov-cats">${cats}</div>
+  </div>`;
+}
+
+// ── BIND EVENTS ──
+function render(){renderSidebar();renderMain();bindAll();}
+
+function bindAll(){
+  const app=document.getElementById('app');
+  app.onclick=e=>{
+    const el=e.target.closest('[data-act]');if(!el)return;
+    const a=el.dataset.act;
+    if(a==='toggle-cat'){S.collapsed[el.dataset.cat]=!S.collapsed[el.dataset.cat];render();}
+    else if(a==='sel'){S.selId=el.dataset.proj;S.showEntry=false;S.showAddMs=false;S.showEditNum=false;render();}
+    else if(a==='ov-cat'){S.collapsed[el.dataset.cat]=false;renderSidebar();bindAll();}
+    else if(a==='start-add-proj'){S.addProjCat=el.dataset.cat;render();}
+    else if(a==='cancel-add-proj'){S.addProjCat=null;render();}
+    else if(a==='save-proj'){saveProj(el.dataset.cat);}
+    else if(a==='show-entry'){S.showEntry=true;renderMain();bindAll();}
+    else if(a==='cancel-entry'){S.showEntry=false;renderMain();bindAll();}
+    else if(a==='save-entry'){saveEntry();}
+    else if(a==='toggle-ms'){toggleMs(el.dataset.mid);}
+    else if(a==='toggle-add-ms'){S.showAddMs=true;renderMain();bindAll();}
+    else if(a==='cancel-ms'){S.showAddMs=false;renderMain();bindAll();}
+    else if(a==='save-ms'){saveMs();}
+    else if(a==='edit-num'){S.showEditNum=true;renderMain();bindAll();}
+    else if(a==='cancel-num'){S.showEditNum=false;renderMain();bindAll();}
+    else if(a==='save-num'){saveNum();}
+  };
+  app.onchange=e=>{
+    const el=e.target.closest('[data-act]');if(!el)return;
+    if(el.dataset.act==='change-status')changeStatus(el.value);
+  };
+  const ns=document.getElementById('np-nt');
+  if(ns)ns.onchange=()=>{const f=document.getElementById('np-nf');if(f)f.style.display=ns.value==='yes'?'block':'none';};
+}
+
+function saveProj(catId){
+  const name=document.getElementById('np-n')?.value?.trim();if(!name)return;
+  const desc=document.getElementById('np-d')?.value?.trim()||'';
+  const isNum=document.getElementById('np-nt')?.value==='yes';
+  S.data.projects.push({id:uid(),catId,name,desc,hasNum:isNum,cur:isNum?(parseFloat(document.getElementById('np-c')?.value)||0):0,tgt:isNum?(parseFloat(document.getElementById('np-t')?.value)||100):100,unit:isNum?(document.getElementById('np-u')?.value||''):'',hasMil:true,hasLog:true,mil:[],log:[],status:'active'});
+  S.addProjCat=null;sv();render();
+}
+function saveEntry(){
+  const p=S.data.projects.find(x=>x.id===S.selId);
+  const date=document.getElementById('ef-d')?.value||today();
+  const note=document.getElementById('ef-n')?.value?.trim();if(!note)return;
+  const e={id:uid(),date,note,val:null};
+  if(p.hasNum){const v=parseFloat(document.getElementById('ef-v')?.value);if(!isNaN(v)){e.val=v;p.cur=v;}}
+  p.log.push(e);S.showEntry=false;sv();render();
+}
+function toggleMs(mid){const p=S.data.projects.find(x=>x.id===S.selId);const m=p.mil.find(x=>x.id===mid);if(m){m.d=!m.d;m.dt=m.d?today():null;sv();render();}}
+function saveMs(){const t=document.getElementById('new-ms')?.value?.trim();if(!t)return;const p=S.data.projects.find(x=>x.id===S.selId);p.mil.push({id:uid(),t,d:false,dt:null});S.showAddMs=false;sv();render();}
+function saveNum(){const v=parseFloat(document.getElementById('en-v')?.value);if(isNaN(v))return;const p=S.data.projects.find(x=>x.id===S.selId);p.cur=v;S.showEditNum=false;sv();render();}
+function changeStatus(val){const p=S.data.projects.find(x=>x.id===S.selId);if(p){p.status=val;sv();render();}}
+
+// ── INIT ──
+load();render();
+</script>
+</body>
+</html>

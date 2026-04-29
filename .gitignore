@@ -1,0 +1,17 @@
+# Local
+.DS_Store
+.idea/
+.vscode/
+*.log
+
+# Supabase CLI
+.supabase/
+.env
+.env.local
+*.local
+
+# Deno
+deno.lock
+
+# Editor
+*.swp
