@@ -480,6 +480,24 @@ async function changeStatus(val){
   await write('projects','update',{id:p.id,values:{status:val}});
 }
 
+// ── REALTIME ──
+let _channel=null;
+function subscribeRealtime(){
+  if(_channel)sb.removeChannel(_channel);
+  _channel=sb.channel('vision')
+    .on('postgres_changes',{event:'*',schema:'public',table:'projects'},  ()=>refreshFromCloud())
+    .on('postgres_changes',{event:'*',schema:'public',table:'milestones'},()=>refreshFromCloud())
+    .on('postgres_changes',{event:'*',schema:'public',table:'log_entries'},()=>refreshFromCloud())
+    .subscribe();
+}
+
+// Debounced refresh to avoid render storms during bulk MCP writes
+let _refreshT=null;
+function refreshFromCloud(){
+  clearTimeout(_refreshT);
+  _refreshT=setTimeout(async()=>{await loadFromCloud();render();},250);
+}
+
 // ── LOGIN VIEW ──
 function renderLogin(){
   const app=document.getElementById('app');
