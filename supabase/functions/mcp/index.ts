@@ -1,31 +1,37 @@
 // Vision App — MCP Server (Supabase Edge Function)
 //
-// Implements the MCP protocol directly over HTTP/JSON-RPC. Stateless JSON mode:
-//   - Single endpoint: POST /
-//   - Bearer token in Authorization header
-//   - One JSON-RPC request → one JSON-RPC response (no SSE, no session state)
+// Routes:
+//   GET  /                                       → health check
+//   POST /                                       → MCP JSON-RPC traffic (auth required)
+//   GET  /.well-known/oauth-protected-resource   → RFC 9728 metadata
+//   GET  /.well-known/oauth-authorization-server → RFC 8414 metadata
+//   POST /oauth/register                         → RFC 7591 dynamic client registration
+//   GET  /oauth/authorize                        → consent page (HTML)
+//   POST /oauth/authorize                        → consent submission, redirects with code
+//   POST /oauth/token                            → auth code → access token / refresh
 //
-// claude.ai supports this via the "custom MCP" connector form.
-// Claude Code / Claude desktop also support it.
-//
-// We hand-roll the protocol rather than use the SDK's transport adapter
-// because the SDK's transports are Node-shaped (req/res) and adapting them
-// to Deno is more work than just handling the four methods we need.
+// Auth on MCP traffic accepts either:
+//   - Static MCP_BEARER_TOKEN (Claude Code, Claude Desktop)
+//   - Signed JWT issued via OAuth (claude.ai web/mobile)
 
 import { tools, Tool } from './tools/_registry.ts';
-
-const MCP_BEARER_TOKEN = Deno.env.get('MCP_BEARER_TOKEN');
-if (!MCP_BEARER_TOKEN) throw new Error('MCP_BEARER_TOKEN env var required');
+import {
+  protectedResourceMetadata,
+  authorizationServerMetadata,
+  register,
+  authorize,
+  token,
+  isAuthorized,
+} from './oauth.ts';
 
 const PROTOCOL_VERSION = '2025-06-18';
 const SERVER_INFO = { name: 'vision-app-mcp', version: '1.0.0' };
 
-function constantTimeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let r = 0;
-  for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return r === 0;
-}
+const cors = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, content-type, mcp-session-id, mcp-protocol-version',
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+};
 
 type JsonRpcRequest = {
   jsonrpc: '2.0';
@@ -33,7 +39,6 @@ type JsonRpcRequest = {
   method: string;
   params?: Record<string, unknown>;
 };
-
 type JsonRpcResponse = {
   jsonrpc: '2.0';
   id: string | number | null;
@@ -44,26 +49,24 @@ type JsonRpcResponse = {
 function ok(id: JsonRpcRequest['id'], result: unknown): JsonRpcResponse {
   return { jsonrpc: '2.0', id: id ?? null, result };
 }
-function err(id: JsonRpcRequest['id'], code: number, message: string, data?: unknown): JsonRpcResponse {
-  return { jsonrpc: '2.0', id: id ?? null, error: { code, message, data } };
+function err(id: JsonRpcRequest['id'], code: number, message: string): JsonRpcResponse {
+  return { jsonrpc: '2.0', id: id ?? null, error: { code, message } };
 }
 
 async function dispatch(req: JsonRpcRequest): Promise<JsonRpcResponse | null> {
   switch (req.method) {
-    case 'initialize': {
+    case 'initialize':
       return ok(req.id, {
         protocolVersion: PROTOCOL_VERSION,
         capabilities: { tools: { listChanged: false } },
         serverInfo: SERVER_INFO,
       });
-    }
     case 'notifications/initialized':
     case 'notifications/cancelled':
-      // Notifications have no id and expect no response.
       return null;
     case 'ping':
       return ok(req.id, {});
-    case 'tools/list': {
+    case 'tools/list':
       return ok(req.id, {
         tools: tools.map((t: Tool) => ({
           name: t.name,
@@ -71,7 +74,6 @@ async function dispatch(req: JsonRpcRequest): Promise<JsonRpcResponse | null> {
           inputSchema: t.schema,
         })),
       });
-    }
     case 'tools/call': {
       const name = req.params?.name as string | undefined;
       const args = (req.params?.arguments ?? {}) as Record<string, unknown>;
@@ -97,23 +99,58 @@ async function dispatch(req: JsonRpcRequest): Promise<JsonRpcResponse | null> {
   }
 }
 
-const cors = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, content-type, mcp-session-id, mcp-protocol-version',
-  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-};
+// Strip the function-mount prefix to get the route relative to our service.
+// Supabase routes us internally at /mcp/<route>; the public-facing URL is
+// /functions/v1/mcp/<route> (the gateway strips /functions/v1 before
+// forwarding to us).
+function routeOf(req: Request): string {
+  const u = new URL(req.url);
+  const idx = u.pathname.indexOf('/mcp');
+  if (idx < 0) return '/';
+  let path = u.pathname.slice(idx + '/mcp'.length) || '/';
+  if (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1);
+  return path;
+}
 
 Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
 
-  // Bearer auth
-  const auth = req.headers.get('authorization') ?? '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-  if (!constantTimeEqual(token, MCP_BEARER_TOKEN!)) {
-    return new Response('Unauthorized', { status: 401, headers: cors });
+  const route = routeOf(req);
+
+  // ───── OAuth discovery (no auth required) ─────
+  if (req.method === 'GET' && route === '/.well-known/oauth-protected-resource') {
+    return protectedResourceMetadata(req);
+  }
+  if (req.method === 'GET' && route === '/.well-known/oauth-authorization-server') {
+    return authorizationServerMetadata(req);
   }
 
-  // GET = health check
+  // ───── OAuth flow (no auth required to reach these) ─────
+  if (req.method === 'POST' && route === '/oauth/register') return await register(req);
+  if (route === '/oauth/authorize' && (req.method === 'GET' || req.method === 'POST')) {
+    return await authorize(req);
+  }
+  if (req.method === 'POST' && route === '/oauth/token') return await token(req);
+
+  // ───── MCP root (auth required) ─────
+  if (route !== '/') {
+    return new Response('Not Found', { status: 404, headers: cors });
+  }
+
+  if (!(await isAuthorized(req))) {
+    const u = new URL(req.url);
+    const metadataUrl = `https://${u.host}/functions/v1/mcp/.well-known/oauth-protected-resource`;
+    return new Response('Unauthorized', {
+      status: 401,
+      headers: {
+        ...cors,
+        // Per RFC 9728: point clients at the resource metadata so they can
+        // discover the auth server and start the OAuth flow.
+        'WWW-Authenticate': `Bearer realm="vision-app-mcp", resource_metadata="${metadataUrl}"`,
+      },
+    });
+  }
+
   if (req.method === 'GET') {
     return new Response(JSON.stringify({ status: 'ok', ...SERVER_INFO }), {
       headers: { ...cors, 'content-type': 'application/json' },
@@ -128,11 +165,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
   try { body = await req.json(); }
   catch {
     return new Response(JSON.stringify(err(null, -32700, 'Parse error')), {
-      status: 400, headers: { ...cors, 'content-type': 'application/json' },
+      status: 400,
+      headers: { ...cors, 'content-type': 'application/json' },
     });
   }
 
-  // Single request or batch
   if (Array.isArray(body)) {
     const responses = await Promise.all(body.map(r => dispatch(r as JsonRpcRequest)));
     const filtered = responses.filter((r): r is JsonRpcResponse => r !== null);
@@ -142,10 +179,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
 
   const response = await dispatch(body as JsonRpcRequest);
-  if (response === null) {
-    // Notification — empty 204
-    return new Response(null, { status: 204, headers: cors });
-  }
+  if (response === null) return new Response(null, { status: 204, headers: cors });
   return new Response(JSON.stringify(response), {
     headers: { ...cors, 'content-type': 'application/json' },
   });
