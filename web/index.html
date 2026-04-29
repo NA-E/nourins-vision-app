@@ -16,7 +16,7 @@
 
 <!-- Strict CSP: only allow connections to our own Supabase project + jsdelivr CDN -->
 <meta http-equiv="Content-Security-Policy"
-      content="default-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net; connect-src 'self' https://YOURPROJECT.supabase.co wss://YOURPROJECT.supabase.co; img-src 'self' data:;">
+      content="default-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net; connect-src 'self' https://kfbhhdlpsiwyajkfktqb.supabase.co wss://kfbhhdlpsiwyajkfktqb.supabase.co; img-src 'self' data:;">
 
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
@@ -206,8 +206,8 @@
 // CONFIG — these two values are public-safe (anon key has no privileged
 // access; RLS protects all data). They are filled in at deploy time.
 // ─────────────────────────────────────────────────────────────────
-const SUPABASE_URL = 'https://YOURPROJECT.supabase.co';
-const SUPABASE_ANON_KEY = 'PLACEHOLDER_ANON_KEY';
+const SUPABASE_URL = 'https://kfbhhdlpsiwyajkfktqb.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmYmhoZGxwc2l3eWFqa2ZrdHFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjAwNzAsImV4cCI6MjA5MzAzNjA3MH0.mkFSz-zpt6-bOP6BC7DIZsbHPslbLxayEcog-KyvoXo';
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: { persistSession: true, autoRefreshToken: true }
