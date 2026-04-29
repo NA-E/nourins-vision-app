@@ -160,6 +160,13 @@ begin
   end if;
 end$$;
 
+-- nourin_app bypasses RLS because the MCP function code unconditionally
+-- filters by NOURIN_USER_ID env var on every query. RLS would otherwise
+-- block all access since auth.uid() is NULL outside a Supabase Auth JWT
+-- session. The role's table grants are still scoped (only 4 data tables
+-- + events), so blast radius is bounded.
+alter role nourin_app bypassrls;
+
 grant usage on schema public to nourin_app;
 grant select, insert, update on public.categories  to nourin_app;
 grant select, insert, update on public.projects    to nourin_app;
