@@ -19,6 +19,9 @@ import { set_milestone_status } from './set_milestone_status.ts';
 import { log_entry }            from './log_entry.ts';
 import { add_reflection }       from './add_reflection.ts';
 
+// Recovery
+import { undo_last_write } from './undo_last_write.ts';
+
 export const tools: Tool[] = [
   get_dashboard,
   get_project,
@@ -29,4 +32,5 @@ export const tools: Tool[] = [
   set_milestone_status,
   log_entry,
   add_reflection,
+  undo_last_write,
 ];
