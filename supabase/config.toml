@@ -3,6 +3,17 @@
 project_id = "kfbhhdlpsiwyajkfktqb"
 
 [auth]
+# Where magic-link emails redirect after clicking. Must match the deployed
+# web app URL exactly (trailing slash matters for some Supabase versions).
+site_url = "https://na-e.github.io/nourins-vision-app/"
+# Other URLs allowed in `redirect_to` parameters (in case we add custom
+# auth screens later — e.g., the OAuth consent page on GH Pages).
+additional_redirect_urls = [
+  "https://na-e.github.io/nourins-vision-app/",
+  "https://na-e.github.io/nourins-vision-app",
+  "https://na-e.github.io/nourins-vision-app/consent.html",
+]
+
 # No public signup. Only Nourin's account exists; new users are added
 # manually via the Auth dashboard if/when ever needed.
 enable_signup = false
