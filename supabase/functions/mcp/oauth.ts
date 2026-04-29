@@ -9,6 +9,11 @@ import { signJWT, verifyJWT, s256 } from './jwt.ts';
 
 const MCP_BEARER_TOKEN = Deno.env.get('MCP_BEARER_TOKEN');
 const NOURIN_USER_ID = Deno.env.get('NOURIN_USER_ID');
+// Optional: pre-registered OAuth client (for clients that don't use DCR
+// or that require a pre-registered client_id/secret pair, like some
+// claude.ai connector flows). DCR still works alongside.
+const OAUTH_CLIENT_ID = Deno.env.get('OAUTH_CLIENT_ID') ?? '';
+const OAUTH_CLIENT_SECRET = Deno.env.get('OAUTH_CLIENT_SECRET') ?? '';
 if (!MCP_BEARER_TOKEN || !NOURIN_USER_ID) {
   throw new Error('MCP_BEARER_TOKEN and NOURIN_USER_ID env vars required');
 }
@@ -65,9 +70,10 @@ export function authorizationServerMetadata(req: Request): Response {
     registration_endpoint: `${base}/oauth/register`,
     scopes_supported: ['mcp'],
     response_types_supported: ['code'],
+    response_modes_supported: ['query'],
     grant_types_supported: ['authorization_code', 'refresh_token'],
     code_challenge_methods_supported: ['S256'],
-    token_endpoint_auth_methods_supported: ['none', 'client_secret_basic'],
+    token_endpoint_auth_methods_supported: ['none', 'client_secret_post', 'client_secret_basic'],
   });
 }
 
@@ -168,6 +174,31 @@ export async function token(req: Request): Promise<Response> {
     const text = await req.text();
     params = Object.fromEntries(new URLSearchParams(text));
   } catch { return errorResponse(400, 'invalid_request', 'Body must be x-www-form-urlencoded'); }
+
+  // Client authentication: support client_secret_post (body), client_secret_basic
+  // (HTTP Basic header), or none (DCR clients with PKCE only).
+  let clientId = params.client_id ?? '';
+  let clientSecret = params.client_secret ?? '';
+  const basic = req.headers.get('authorization');
+  if (basic && basic.startsWith('Basic ')) {
+    try {
+      const decoded = atob(basic.slice(6));
+      const sep = decoded.indexOf(':');
+      if (sep >= 0) {
+        clientId = clientId || decoded.slice(0, sep);
+        clientSecret = clientSecret || decoded.slice(sep + 1);
+      }
+    } catch { /* ignore */ }
+  }
+
+  // If a static client is configured AND the client identifies itself as that
+  // client_id, validate the secret. Otherwise, trust PKCE for the security
+  // floor (DCR public client flow).
+  if (OAUTH_CLIENT_ID && clientId === OAUTH_CLIENT_ID) {
+    if (!constantTimeEqual(clientSecret, OAUTH_CLIENT_SECRET)) {
+      return errorResponse(401, 'invalid_client', 'Bad client credentials');
+    }
+  }
 
   const grant = params.grant_type;
 
