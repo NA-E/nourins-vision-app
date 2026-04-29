@@ -83,9 +83,19 @@ curl -i https://<your-project-ref>.supabase.co/functions/v1/mcp \
 # → 200 {"status":"ok","name":"vision-app-mcp","version":"1.0.0"}
 ```
 
-## 8. Connect Claude (Code or Desktop)
+## 8. Connect Claude (any client)
 
-> **Note:** claude.ai web/mobile **does not** support bearer-token custom connectors today — only OAuth ([GitHub issue #112](https://github.com/anthropics/claude-ai-mcp/issues/112)). Use Claude Code or Claude Desktop, both of which support custom HTTP headers natively. To unlock claude.ai web/mobile, an OAuth layer can be added on top of the MCP server (separate phase of work).
+The MCP server supports two auth paths:
+- **OAuth 2.1** with PKCE + Dynamic Client Registration — for **claude.ai web/mobile**
+- **Static bearer token** in a custom HTTP header — for **Claude Code** and **Claude Desktop**
+
+### claude.ai web / mobile (OAuth)
+
+claude.ai → Settings → Connectors → Add custom connector:
+- **URL:** `https://<your-project-ref>.supabase.co/functions/v1/mcp`
+- **Auth:** leave as default ("OAuth" — claude.ai discovers everything via `/.well-known/oauth-protected-resource`)
+
+When you click connect, you'll be redirected to a consent page in your project's domain. It asks for your **Vision App key** — paste your `MCP_BEARER_TOKEN` (from `.env.local`). Approve, claude.ai gets an access token (30-day TTL, auto-refreshing for 90 days), and you're connected. Test from any conversation: "show my vision dashboard."
 
 ### Claude Code (in this repo)
 
