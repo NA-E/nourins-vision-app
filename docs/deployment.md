@@ -33,4 +33,85 @@ Supabase Dashboard → Authentication → Settings:
 - Add a user manually with your email, OR temporarily re-enable signups, sign in via the live web app, then disable signups again.
 - Copy your `auth.users.id` UUID — needed for the MCP function env.
 
-## 6-9. (filled in later phases)
+## 6. Configure web app + deploy to GitHub Pages
+
+In `web/index.html`, replace placeholders near the top of the `<script>` tag:
+- `SUPABASE_URL = 'https://YOURPROJECT.supabase.co'` → your real URL
+- `SUPABASE_ANON_KEY = 'PLACEHOLDER_ANON_KEY'` → your real anon key
+
+In the `<meta http-equiv="Content-Security-Policy">` tag near the top, replace `YOURPROJECT.supabase.co` with your real subdomain (both `https://` and `wss://` lines).
+
+Verify the SRI hash on the pinned Supabase SDK script tag matches the published file (regenerate if you bump the version):
+```bash
+curl -s https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.46.1/dist/umd/supabase.min.js \
+  | openssl dgst -sha384 -binary | openssl base64 -A
+```
+
+Push to GitHub:
+```bash
+git push -u origin master
+```
+
+In repo Settings → Pages: source = `master` branch, folder = `/web`. Wait ~1 min for the green check.
+
+## 7. Deploy MCP Edge Function
+
+```bash
+supabase functions deploy mcp --no-verify-jwt
+```
+(`--no-verify-jwt` because we authenticate via our own bearer token, not Supabase's JWT.)
+
+Generate a strong bearer token:
+```bash
+openssl rand -hex 32
+```
+
+Set the function's secrets:
+```bash
+supabase secrets set \
+  PG_URL='postgres://nourin_app:<password-from-step-3>@aws-0-<your-region>.pooler.supabase.com:5432/postgres?sslmode=require' \
+  NOURIN_USER_ID='<your-auth-uid-from-step-5>' \
+  MCP_BEARER_TOKEN='<your-generated-bearer-token>'
+```
+
+The `PG_URL` host comes from your Supabase project's connection string (Dashboard → Project Settings → Database → "Connection string"). Use the **Session pooler** connection string and substitute the `nourin_app` user + password you set in step 3.
+
+Test the function with a health check:
+```bash
+curl -i https://<your-project-ref>.supabase.co/functions/v1/mcp \
+  -H 'Authorization: Bearer <your-bearer-token>'
+# → 200 {"status":"ok","name":"vision-app-mcp","version":"1.0.0"}
+```
+
+## 8. Connect claude.ai
+
+claude.ai → Settings → Connectors → Add custom MCP:
+- **URL:** `https://<your-project-ref>.supabase.co/functions/v1/mcp`
+- **Authentication:** Bearer token, paste the token from step 7.
+
+Test from a Claude conversation: ask "show my dashboard." You should see all your projects.
+
+For Claude Code, add a similar entry to your MCP config with the same URL + bearer token.
+
+## 9. Restore your data
+
+1. Open the *current* `index (4).html` (still in repo root) once more in your browser.
+2. Open DevTools console (F12), run:
+   ```js
+   copy(localStorage.getItem('nourin_dashboard_v1'))
+   ```
+   The full JSON is now on your clipboard.
+3. Open the live web app at your GitHub Pages URL. Sign in via magic link (or 6-digit OTP).
+4. Click the gear icon at the bottom-left of the sidebar → "Restore my data" → paste → Import.
+5. Verify all projects, milestones, and log entries appear correctly.
+6. From any device, sign in with the same email — same data appears.
+
+You're done. Use the app on phone, laptop, claude.ai web/mobile, Claude Code, Claude desktop — all sharing the same data.
+
+Once you've confirmed the import worked end-to-end, you can delete the legacy file:
+```bash
+git rm "index (4).html"
+git commit -m "chore: remove legacy localStorage HTML after successful migration"
+git push
+```
+
