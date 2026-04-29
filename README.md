@@ -10,7 +10,7 @@ See `CLAUDE.md` for full project context and data details.
 
 - **Web app:** Plain HTML/CSS/JS, Supabase JS SDK v2 (CDN, SRI-pinned), GitHub Pages
 - **Database:** Supabase Postgres with RLS, magic-link + OTP auth, real-time subscriptions
-- **MCP server:** Supabase Edge Function (Deno), MCP TypeScript SDK, Streamable HTTP transport
+- **MCP server:** Supabase Edge Function (Deno), JSON-RPC over HTTP, bearer-token auth, scoped Postgres role
 
 ## Setup
 
