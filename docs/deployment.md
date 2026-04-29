@@ -95,7 +95,7 @@ For Claude Code, add a similar entry to your MCP config with the same URL + bear
 
 ## 9. Restore your data
 
-1. Open the *current* `index (4).html` (still in repo root) once more in your browser.
+1. Open the legacy backup at `E:/1.Claude Code/_vision-app-legacy-backup/index (4).html` in your browser. (The file was kept out of the public repo for privacy. If your Chrome session still has the original tab open from before deployment, you can use that instead — same localStorage origin.)
 2. Open DevTools console (F12), run:
    ```js
    copy(localStorage.getItem('nourin_dashboard_v1'))
@@ -108,10 +108,8 @@ For Claude Code, add a similar entry to your MCP config with the same URL + bear
 
 You're done. Use the app on phone, laptop, claude.ai web/mobile, Claude Code, Claude desktop — all sharing the same data.
 
-Once you've confirmed the import worked end-to-end, you can delete the legacy file:
+Once you've confirmed the import worked end-to-end, you can delete the local backup:
 ```bash
-git rm "index (4).html"
-git commit -m "chore: remove legacy localStorage HTML after successful migration"
-git push
+rm -rf "E:/1.Claude Code/_vision-app-legacy-backup/"
 ```
 

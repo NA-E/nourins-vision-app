@@ -21,7 +21,7 @@ Anchoring goals: Umrah ($6,300 for 4 — her, parents, son Ibrahim) and Hajj ($2
 
 The working app file is `web/index.html` — a single self-contained HTML file with no build step. Open it in a browser and it works once you've configured the Supabase credentials. See `docs/deployment.md` for the full setup recipe.
 
-The original localStorage-only version is preserved at `index (4).html` (root) until Nourin has completed the import flow (Step 9 in `docs/deployment.md`). After import is verified, that file is removed from the repo.
+The original localStorage-only version is kept as a local backup outside the repo at `E:/1.Claude Code/_vision-app-legacy-backup/index (4).html`. It was excluded from git history before the first push for privacy (it contained personal seed data). After Nourin completes the import flow (Step 9 in `docs/deployment.md`) and verifies her data in Supabase, the local backup can be deleted.
 
 ## Repository structure
 
@@ -39,7 +39,7 @@ docs/
   superpowers/plans/        — implementation plan
 CLAUDE.md                   — this file
 README.md                   — project summary
-index (4).html              — legacy localStorage version (kept until migration)
+(legacy index (4).html)     — kept outside the repo at /_vision-app-legacy-backup/
 ```
 
 **Be careful with the data** — `S.data` is the in-memory state shaped from Supabase reads. On cloud migration, `localStorage` is no longer used; data lives in Postgres with RLS.
