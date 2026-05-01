@@ -94,21 +94,23 @@
   .ov-cat-me{font-size:10px;color:var(--ct);}
   .ov-cat-br{height:1.5px;border-radius:1px;margin-top:10px;opacity:.5;}
   .det-ey{font-size:9px;letter-spacing:.2em;text-transform:uppercase;font-weight:500;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
-  .det-ttl{font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--cr);line-height:1.2;margin-bottom:6px;}
-  .det-ds{font-size:13px;color:var(--cs);line-height:1.75;margin-bottom:20px;font-weight:300;}
+  .det-ttl{font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--cr);line-height:1.2;margin-bottom:6px;cursor:text;}
+  .det-ttl:hover{opacity:.85;}
+  .det-ds{font-size:13px;color:var(--cs);line-height:1.75;margin-bottom:20px;font-weight:300;cursor:text;}
+  .det-ds:hover{opacity:.85;}
   .det-tr{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;}
   .sdiv{display:flex;align-items:center;gap:8px;margin:20px 0 10px;}
   .sdiv-l{flex:1;height:0.5px;background:var(--bdr);}
   .sdiv-d{width:7px;height:7px;transform:rotate(45deg);background:var(--g);flex-shrink:0;opacity:.5;border-radius:1px;}
   .sdiv-t{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--g);}
-  .nb{display:flex;align-items:baseline;gap:7px;margin-bottom:10px;}
+  .nb{display:flex;align-items:baseline;gap:7px;margin-bottom:10px;position:relative;}
   .nc{font-family:'Cormorant Garamond',serif;font-size:40px;font-weight:300;color:var(--g);line-height:1;}
   .nt{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--cs);}
   .nu{font-size:10px;color:var(--ct);letter-spacing:.06em;}
   .pbb{height:3px;background:var(--bdr);border-radius:2px;overflow:hidden;margin-bottom:4px;}
   .pbf{height:100%;border-radius:2px;transition:width .4s;}
   .pp{font-size:10px;color:var(--ct);}
-  .mi{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--bdr);}
+  .mi{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--bdr);position:relative;}
   .mi:last-child{border-bottom:none;}
   .mg{width:14px;height:14px;transform:rotate(45deg);border:0.5px solid rgba(212,175,106,.3);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;border-radius:2px;}
   .mg.on{border-color:transparent;}
@@ -117,7 +119,7 @@
   .mt{font-size:13px;color:var(--cs);flex:1;font-weight:300;}
   .mt.on{color:var(--ct);text-decoration:line-through;}
   .md{font-size:9px;color:var(--ct);}
-  .li{padding:10px 0;border-bottom:0.5px solid var(--bdr);}
+  .li{padding:10px 0;border-bottom:0.5px solid var(--bdr);position:relative;}
   .li:last-child{border-bottom:none;}
   .lh{display:flex;justify-content:space-between;margin-bottom:4px;}
   .ld{font-family:'Cormorant Garamond',serif;font-size:11px;font-style:italic;color:var(--ct);}
@@ -194,6 +196,114 @@
   .lv-msg{font-size:11px;color:var(--cs);margin-top:14px;text-align:center;line-height:1.6;font-style:italic;}
   .lv-otp{font-size:11px;color:var(--g);margin-top:10px;cursor:pointer;text-align:center;text-decoration:underline;text-decoration-color:rgba(212,175,106,.4);}
   .lv-otp:hover{text-decoration-color:var(--g);}
+
+  /* ── INLINE EDIT AFFORDANCES ── */
+  /* Shared pencil / delete button base */
+  .ed-btn{
+    background:none;border:none;cursor:pointer;padding:2px 4px;
+    font-size:11px;color:var(--ct);opacity:0;
+    transition:opacity .15s,color .15s;line-height:1;flex-shrink:0;
+  }
+  .ed-btn:hover{color:var(--g);opacity:1!important;}
+
+  /* Pencil on project title hover */
+  .det-ttl-wrap{position:relative;display:flex;align-items:flex-start;gap:6px;cursor:text;margin-bottom:6px;}
+  .det-ttl-wrap:hover .ed-btn{opacity:.45;}
+  .det-ttl-wrap .det-ttl{margin-bottom:0;flex:1;}
+
+  /* Description wrapper */
+  .det-ds-wrap{position:relative;margin-bottom:20px;cursor:text;}
+  .det-ds-wrap:hover .ed-btn{opacity:.45;}
+  .det-ds-wrap .det-ds{margin-bottom:0;}
+  .det-ds-wrap .ed-btn{position:absolute;top:0;right:0;}
+
+  /* Inline edit inputs — match .fb style */
+  .inline-input{
+    width:100%;font-size:inherit;font-family:'DM Sans',sans-serif;
+    background:rgba(255,255,255,.04);border:0.5px solid var(--bdrs);
+    border-radius:6px;color:var(--cr);padding:5px 9px;
+    outline:none;transition:border-color .15s;
+  }
+  .inline-input:focus{border-color:var(--g);}
+  .inline-textarea{
+    width:100%;font-size:13px;font-family:'DM Sans',sans-serif;
+    background:rgba(255,255,255,.04);border:0.5px solid var(--bdrs);
+    border-radius:6px;color:var(--cr);padding:7px 10px;
+    outline:none;resize:vertical;min-height:48px;max-height:140px;
+    transition:border-color .15s;line-height:1.75;
+  }
+  .inline-textarea:focus{border-color:var(--g);}
+  .inline-actions{display:flex;gap:5px;margin-top:5px;}
+  .inline-hint{font-size:9px;color:var(--ct);margin-top:3px;letter-spacing:.05em;}
+
+  /* Numeric target edit */
+  .tgt-edit-wrap{display:flex;align-items:baseline;gap:7px;margin-bottom:10px;flex-wrap:wrap;}
+  .tgt-edit-pencil-wrap{display:flex;align-items:baseline;gap:7px;margin-bottom:10px;position:relative;}
+  .tgt-edit-pencil-wrap:hover .ed-btn{opacity:.45;}
+  .tgt-form{display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin-bottom:10px;}
+  .tgt-form input{
+    background:rgba(255,255,255,.04);border:0.5px solid var(--bdrs);
+    border-radius:6px;color:var(--cr);font-size:13px;padding:5px 8px;
+    font-family:'DM Sans',sans-serif;outline:none;
+  }
+  .tgt-form input:focus{border-color:var(--g);}
+  .tgt-form .tw{width:88px;}
+  .tgt-form .uw{width:72px;}
+
+  /* Milestone row edit */
+  .mi-actions{display:flex;align-items:center;gap:3px;opacity:0;transition:opacity .15s;flex-shrink:0;}
+  .mi:hover .mi-actions{opacity:1;}
+  .mi-edit-row{display:flex;align-items:center;gap:7px;padding:6px 0;border-bottom:0.5px solid var(--bdr);width:100%;}
+  .mi-edit-row:last-child{border-bottom:none;}
+  .mi-edit-row input{
+    flex:1;font-size:13px;font-family:'DM Sans',sans-serif;
+    background:rgba(255,255,255,.04);border:0.5px solid var(--bdrs);
+    border-radius:6px;color:var(--cr);padding:5px 9px;outline:none;
+  }
+  .mi-edit-row input:focus{border-color:var(--g);}
+
+  /* Log entry row edit */
+  .li-actions{display:flex;align-items:center;gap:3px;opacity:0;transition:opacity .15s;position:absolute;top:8px;right:0;}
+  .li:hover .li-actions{opacity:1;}
+
+  /* Confirmation toast for destructive actions */
+  .conf-toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:var(--bgf);border:0.5px solid var(--g);border-radius:10px;
+    padding:11px 16px;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.5);
+    display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--cr);
+    min-width:240px;
+  }
+  .conf-toast-msg{flex:1;}
+  .conf-toast-yes{
+    background:rgba(212,175,106,.15);border:0.5px solid var(--g);
+    border-radius:6px;color:var(--g);font-size:11px;padding:4px 10px;
+    cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s;
+  }
+  .conf-toast-yes:hover{background:rgba(212,175,106,.28);}
+  .conf-toast-no{
+    background:none;border:0.5px solid rgba(255,255,255,.1);
+    border-radius:6px;color:var(--ct);font-size:11px;padding:4px 10px;
+    cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s;
+  }
+  .conf-toast-no:hover{background:rgba(255,255,255,.05);}
+
+  /* Project delete zone at bottom of detail */
+  .proj-del-zone{
+    margin-top:28px;padding-top:14px;border-top:0.5px solid var(--bdr);
+    display:flex;align-items:center;gap:8px;
+  }
+  .proj-del-btn{
+    font-size:10px;color:var(--ct);background:none;border:none;cursor:pointer;
+    padding:4px 6px;border-radius:6px;font-family:'DM Sans',sans-serif;
+    letter-spacing:.04em;transition:all .15s;opacity:.55;
+  }
+  .proj-del-btn:hover{color:var(--fi);opacity:1;}
+  .proj-del-btn.confirm{
+    color:var(--fi);border:0.5px solid var(--fi);opacity:1;
+    background:rgba(201,122,122,.07);padding:4px 10px;
+  }
+  .proj-del-btn.confirm:hover{background:rgba(201,122,122,.15);}
 </style>
 </head>
 <body>
@@ -233,7 +343,15 @@ function sdiv(label){return `<div class="sdiv"><div class="sdiv-l"></div><div cl
 
 
 // ── STATE ──
-let S={selId:null,data:null,collapsed:{},showEntry:false,showAddMs:false,showEditNum:false,addProjCat:null};
+let S={
+  selId:null,data:null,collapsed:{},
+  showEntry:false,showAddMs:false,showEditNum:false,addProjCat:null,
+  // inline-edit state
+  editingField:null,   // 'name' | 'desc' | 'tgt'
+  editingMsId:null,    // milestone id being edited
+  editingLogId:null,   // log entry id being edited
+  deleteProjConfirm:false, // two-step project delete
+};
 
 // ── CLOUD STORAGE ──
 async function loadFromCloud(){
@@ -248,7 +366,7 @@ async function loadFromCloud(){
   const[{data:projects},{data:milestones},{data:logEntries}]=await Promise.all([
     sb.from('projects').select('*').is('deleted_at',null).order('sort_order').order('created_at'),
     sb.from('milestones').select('*').is('deleted_at',null).order('sort_order'),
-    sb.from('log_entries').select('*').order('date',{ascending:true}),
+    sb.from('log_entries').select('*').is('deleted_at',null).order('date',{ascending:true}),
   ]);
 
   // Reshape into the legacy S.data structure the renderer already understands
@@ -276,6 +394,8 @@ function uid(){return crypto.randomUUID();}
 function getPct(p){if(p.hasNum&&p.tgt>0)return Math.min(100,Math.round(p.cur/p.tgt*100));const t=p.mil.length;if(!t)return 0;return Math.round(p.mil.filter(m=>m.d).length/t*100);}
 function fmt(d){if(!d)return'';try{return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}catch{return d;}}
 function today(){return new Date().toISOString().split('T')[0];}
+// Escape HTML to safely embed arbitrary text in innerHTML
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 // ── RENDER SIDEBAR ──
 function renderSidebar(){
@@ -306,7 +426,7 @@ function renderSidebar(){
     if(open){
       cps.forEach(p=>{
         const sel=p.id===S.selId;
-        h+=`<div class="pi${sel?' sel':''}" draggable="true" style="border-left-color:${sel?CC[p.catId]:'transparent'}" data-act="sel" data-proj="${p.id}" data-cat="${p.catId}"><span class="pi-nm">${p.name}</span><span class="pi-pct">${getPct(p)}%</span></div>`;
+        h+=`<div class="pi${sel?' sel':''}" draggable="true" style="border-left-color:${sel?CC[p.catId]:'transparent'}" data-act="sel" data-proj="${p.id}" data-cat="${p.catId}"><span class="pi-nm">${esc(p.name)}</span><span class="pi-pct">${getPct(p)}%</span></div>`;
       });
       if(S.addProjCat===c.id){
         h+=`<div class="sb-form"><label>Name</label><input id="np-n" type="text"><label>Description</label><input id="np-d" type="text"><label>Numeric target?</label><select id="np-nt"><option value="no">No</option><option value="yes">Yes</option></select><div id="np-nf" style="display:none"><label>Start · Target · Unit</label><div style="display:flex;gap:4px;margin-top:3px"><input id="np-c" type="number" value="0" style="width:44px;padding:5px 6px"><input id="np-t" type="number" placeholder="target" style="width:56px;padding:5px 6px"><input id="np-u" type="text" placeholder="unit"></div></div><div class="acts"><button class="btn btng btns" data-act="save-proj" data-cat="${c.id}">Save</button><button class="btn btns" data-act="cancel-add-proj">Cancel</button></div></div>`;
@@ -329,30 +449,207 @@ function renderMain(){
   const col=CC[p.catId];const pct=getPct(p);
   const catName=S.data.categories.find(c=>c.id===p.catId)?.name||'';
 
+  // ── Project name (Feature 1) ──
+  let titleHtml;
+  if(S.editingField==='name'){
+    titleHtml=`<div style="margin-bottom:6px">
+      <input id="ei-name" class="inline-input" style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400" value="${esc(p.name)}">
+      <div class="inline-hint">Enter to save · Esc to cancel</div>
+    </div>`;
+  } else {
+    titleHtml=`<div class="det-ttl-wrap" data-act="edit-name">
+      <div class="det-ttl">${esc(p.name)}</div>
+      <button class="ed-btn" title="Edit name" data-act="edit-name">✎</button>
+    </div>`;
+  }
+
+  // ── Project description (Feature 2) ──
+  let descHtml;
+  if(S.editingField==='desc'){
+    descHtml=`<div style="margin-bottom:20px">
+      <textarea id="ei-desc" class="inline-textarea">${esc(p.desc)}</textarea>
+      <div class="inline-hint">Ctrl+Enter to save · Esc to cancel</div>
+    </div>`;
+  } else {
+    descHtml=`<div class="det-ds-wrap" data-act="edit-desc">
+      <div class="det-ds">${esc(p.desc)}</div>
+      <button class="ed-btn" title="Edit description" data-act="edit-desc">✎</button>
+    </div>`;
+  }
+
+  // ── Numeric section (Feature 3) ──
   let numSec='';
   if(p.hasNum){
     const ef=S.showEditNum
       ?`<div style="display:flex;gap:6px;align-items:center;margin-top:10px"><input id="en-v" type="number" value="${p.cur}" style="width:120px;background:rgba(255,255,255,.04);border:0.5px solid rgba(212,175,106,.26);border-radius:6px;color:#F5EDD8;font-size:13px;padding:7px 10px"><button class="btn btng btns" data-act="save-num">Update</button><button class="btn btns" data-act="cancel-num">Cancel</button></div>`
       :`<button class="btn btns" style="margin-top:8px" data-act="edit-num">Update value</button>`;
-    numSec=`${sdiv('progress')}<div class="nb"><span class="nc">${p.cur.toLocaleString()}</span><span class="nt">/ ${p.tgt.toLocaleString()}</span>${p.unit?`<span class="nu">${p.unit}</span>`:''}</div><div class="pbb"><div class="pbf" style="width:${pct}%;background:${col}"></div></div><div class="pp">${pct}% complete</div>${ef}`;
+
+    let tgtLine;
+    if(S.editingField==='tgt'){
+      tgtLine=`<div class="tgt-form">
+        <input id="et-cur" class="tw" type="number" value="${p.cur}" placeholder="current">
+        <span style="color:var(--cs);font-size:16px">/</span>
+        <input id="et-tgt" class="tw" type="number" value="${p.tgt}" placeholder="target">
+        <input id="et-unit" class="uw" type="text" value="${esc(p.unit)}" placeholder="unit">
+        <button class="btn btng btns" data-act="save-tgt">Save</button>
+        <button class="btn btns" data-act="cancel-tgt">Cancel</button>
+      </div>`;
+    } else {
+      tgtLine=`<div class="tgt-edit-pencil-wrap" data-act="edit-tgt">
+        <span class="nc">${p.cur.toLocaleString()}</span>
+        <span class="nt">/ ${p.tgt.toLocaleString()}</span>
+        ${p.unit?`<span class="nu">${esc(p.unit)}</span>`:''}
+        <button class="ed-btn" title="Edit target" data-act="edit-tgt" style="margin-left:4px;font-size:12px">✎</button>
+      </div>`;
+    }
+
+    numSec=`${sdiv('progress')}${tgtLine}<div class="pbb"><div class="pbf" style="width:${pct}%;background:${col}"></div></div><div class="pp">${pct}% complete</div>${ef}`;
   }
 
-  const msItems=p.mil.map(ms=>`<div class="mi"><div class="mg${ms.d?' on':''}" style="${ms.d?`background:${col};border-color:${col}`:''}" data-act="toggle-ms" data-mid="${ms.id}"><div class="mg-in" style="${ms.d?'background:rgba(255,255,255,.9)':''}"></div></div><span class="mt${ms.d?' on':''}">${ms.t}</span><span class="md">${ms.dt?fmt(ms.dt):''}</span></div>`).join('');
+  // ── Milestones (Feature 4 + Feature 6 delete) ──
+  const msItems=p.mil.map(ms=>{
+    if(S.editingMsId===ms.id){
+      return `<div class="mi-edit-row">
+        <div class="mg${ms.d?' on':''}" style="${ms.d?`background:${col};border-color:${col}`:''}" data-act="toggle-ms" data-mid="${ms.id}"><div class="mg-in" style="${ms.d?'background:rgba(255,255,255,.9)':''}"></div></div>
+        <input id="ems-${ms.id}" class="" value="${esc(ms.t)}" style="flex:1;font-size:13px;font-family:'DM Sans',sans-serif;background:rgba(255,255,255,.04);border:0.5px solid rgba(212,175,106,.26);border-radius:6px;color:var(--cr);padding:5px 9px;outline:none;">
+        <button class="btn btng btns" data-act="save-ms-edit" data-mid="${ms.id}">Save</button>
+        <button class="btn btns" data-act="cancel-ms-edit">Cancel</button>
+      </div>`;
+    }
+    return `<div class="mi">
+      <div class="mg${ms.d?' on':''}" style="${ms.d?`background:${col};border-color:${col}`:''}" data-act="toggle-ms" data-mid="${ms.id}"><div class="mg-in" style="${ms.d?'background:rgba(255,255,255,.9)':''}"></div></div>
+      <span class="mt${ms.d?' on':''}">${esc(ms.t)}</span>
+      <span class="md">${ms.dt?fmt(ms.dt):''}</span>
+      <div class="mi-actions">
+        <button class="ed-btn" data-act="edit-ms" data-mid="${ms.id}" title="Edit milestone" style="opacity:0;transition:opacity .15s">✎</button>
+        <button class="ed-btn" data-act="del-ms" data-mid="${ms.id}" title="Delete milestone" style="opacity:0;transition:opacity .15s;color:var(--ct)">×</button>
+      </div>
+    </div>`;
+  }).join('');
   const addMsR=S.showAddMs?`<div class="ir"><input id="new-ms" type="text" placeholder="New milestone..."><button class="btn btng btns" data-act="save-ms">Add</button><button class="btn btns" data-act="cancel-ms">Cancel</button></div>`:`<button class="btn btns" style="margin-top:6px" data-act="toggle-add-ms">+ milestone</button>`;
   const doneMsCt=p.mil.filter(m=>m.d).length;
 
-  const logItems=[...p.log].reverse().map(e=>`<div class="li"><div class="lh"><span class="ld">${fmt(e.date)}</span>${e.val!=null?`<span class="lv">${Number(e.val).toLocaleString()} ${p.unit}</span>`:''}</div><div class="ln">${e.note}</div></div>`).join('');
-  const entF=S.showEntry?`<div class="fb"><div class="fr"><label>Date</label><input id="ef-d" type="date" value="${today()}"></div>${p.hasNum?`<div class="fr"><label>Updated value — ${p.unit}</label><input id="ef-v" type="number" value="${p.cur}"></div>`:''}<div class="fr"><label>Note</label><textarea id="ef-n" placeholder="What happened? What did you do?"></textarea></div><div class="acts"><button class="btn btng btns" data-act="save-entry">Save</button><button class="btn btns" data-act="cancel-entry">Cancel</button></div></div>`:`<button class="btn btns" style="margin-bottom:8px" data-act="show-entry">+ log update</button>`;
+  // ── Log entries (Feature 5 + Feature 6 delete) ──
+  const logItems=[...p.log].reverse().map(e=>{
+    if(S.editingLogId===e.id){
+      return `<div class="li">
+        <div class="lh"><span class="ld">${fmt(e.date)}</span>${e.val!=null||p.hasNum?`<input id="elv-${e.id}" type="number" value="${e.val!=null?e.val:''}" placeholder="value" style="width:90px;font-size:10px;background:rgba(255,255,255,.04);border:0.5px solid rgba(212,175,106,.26);border-radius:5px;color:var(--g);padding:2px 6px;font-family:'DM Sans',sans-serif;outline:none;" ${e.val==null&&!p.hasNum?'style="display:none"':''}>`:''}</div>
+        <textarea id="eln-${e.id}" class="inline-textarea" style="min-height:40px;margin-top:4px">${esc(e.note)}</textarea>
+        <div class="inline-actions">
+          <button class="btn btng btns" data-act="save-log-edit" data-lid="${e.id}">Save</button>
+          <button class="btn btns" data-act="cancel-log-edit">Cancel</button>
+        </div>
+      </div>`;
+    }
+    return `<div class="li">
+      <div class="lh">
+        <span class="ld">${fmt(e.date)}</span>
+        ${e.val!=null?`<span class="lv">${Number(e.val).toLocaleString()} ${esc(p.unit)}</span>`:''}
+      </div>
+      <div class="ln">${esc(e.note)}</div>
+      <div class="li-actions">
+        <button class="ed-btn" data-act="edit-log" data-lid="${e.id}" title="Edit entry">✎</button>
+        <button class="ed-btn" data-act="del-log" data-lid="${e.id}" title="Delete entry" style="color:var(--ct)">×</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  const entF=S.showEntry?`<div class="fb"><div class="fr"><label>Date</label><input id="ef-d" type="date" value="${today()}"></div>${p.hasNum?`<div class="fr"><label>Updated value — ${esc(p.unit)}</label><input id="ef-v" type="number" value="${p.cur}"></div>`:''}<div class="fr"><label>Note</label><textarea id="ef-n" placeholder="What happened? What did you do?"></textarea></div><div class="acts"><button class="btn btng btns" data-act="save-entry">Save</button><button class="btn btns" data-act="cancel-entry">Cancel</button></div></div>`:`<button class="btn btns" style="margin-bottom:8px" data-act="show-entry">+ log update</button>`;
 
   const sOpts=['active','paused','completed'].map(s=>`<option value="${s}"${p.status===s?' selected':''}>${s}</option>`).join('');
+
+  // ── Project delete zone (Feature 6) ──
+  const delLabel=S.deleteProjConfirm?'Click again to confirm — this hides the project':'Remove project';
+  const delClass=S.deleteProjConfirm?'proj-del-btn confirm':'proj-del-btn';
+  const projDelZone=`<div class="proj-del-zone">
+    <button class="${delClass}" data-act="del-proj">${delLabel}</button>
+  </div>`;
+
   m.innerHTML=`<div class="det-ey" style="color:${col}">${catSVG(p.catId,col,10)}<span>${catName}</span></div>
-    <div class="det-tr"><div class="det-ttl">${p.name}</div><select class="ssel" data-act="change-status">${sOpts}</select></div>
-    <div class="det-ds">${p.desc}</div>
+    <div class="det-tr">${titleHtml}<select class="ssel" data-act="change-status">${sOpts}</select></div>
+    ${descHtml}
     ${numSec}
     ${sdiv(`milestones — ${doneMsCt} of ${p.mil.length}`)}
     ${msItems}${addMsR}
     ${sdiv('log')}
-    ${entF}${p.log.length?logItems:`<div class="emp">Nothing logged yet.</div>`}`;
+    ${entF}${p.log.length?logItems:`<div class="emp">Nothing logged yet.</div>`}
+    ${projDelZone}`;
+
+  // Auto-focus inline inputs and wire their keyboard events
+  _bindInlineEdits(p);
+}
+
+// Wire keyboard/blur handlers for active inline edits (called after renderMain)
+function _bindInlineEdits(p){
+  // Feature 1: name input
+  const nameIn=document.getElementById('ei-name');
+  if(nameIn){
+    nameIn.focus();nameIn.select();
+    nameIn.onkeydown=e=>{
+      if(e.key==='Enter'){e.preventDefault();_saveNameEdit(p);}
+      else if(e.key==='Escape'){S.editingField=null;renderMain();bindAll();}
+    };
+    nameIn.onblur=()=>{
+      // Small delay so click on action buttons isn't swallowed
+      setTimeout(()=>{if(S.editingField==='name')_saveNameEdit(p);},120);
+    };
+  }
+
+  // Feature 2: description textarea
+  const descIn=document.getElementById('ei-desc');
+  if(descIn){
+    descIn.focus();
+    // Auto-fit height
+    descIn.style.height='auto';descIn.style.height=Math.min(descIn.scrollHeight,140)+'px';
+    descIn.oninput=()=>{descIn.style.height='auto';descIn.style.height=Math.min(descIn.scrollHeight,140)+'px';};
+    descIn.onkeydown=e=>{
+      if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();_saveDescEdit(p);}
+      else if(e.key==='Escape'){S.editingField=null;renderMain();bindAll();}
+    };
+    descIn.onblur=()=>{
+      setTimeout(()=>{if(S.editingField==='desc')_saveDescEdit(p);},120);
+    };
+  }
+
+  // Feature 3: tgt inputs — no special binding needed beyond the buttons
+  const tgtIn=document.getElementById('et-tgt');
+  if(tgtIn)tgtIn.focus();
+
+  // Feature 4: milestone edit inputs
+  if(S.editingMsId){
+    const msIn=document.getElementById(`ems-${S.editingMsId}`);
+    if(msIn){
+      msIn.focus();msIn.select();
+      const mid=S.editingMsId;
+      msIn.onkeydown=e=>{
+        if(e.key==='Enter'){e.preventDefault();_saveMsEdit(p,mid);}
+        else if(e.key==='Escape'){S.editingMsId=null;renderMain();bindAll();}
+      };
+      msIn.onblur=()=>{
+        setTimeout(()=>{if(S.editingMsId===mid)_saveMsEdit(p,mid);},120);
+      };
+    }
+  }
+
+  // Feature 5: log edit textarea
+  if(S.editingLogId){
+    const lid=S.editingLogId;
+    const logIn=document.getElementById(`eln-${lid}`);
+    if(logIn){
+      logIn.focus();
+      logIn.style.height='auto';logIn.style.height=Math.min(logIn.scrollHeight,140)+'px';
+      logIn.oninput=()=>{logIn.style.height='auto';logIn.style.height=Math.min(logIn.scrollHeight,140)+'px';};
+      logIn.onkeydown=e=>{
+        if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();_saveLogEdit(p,lid);}
+        else if(e.key==='Escape'){S.editingLogId=null;renderMain();bindAll();}
+      };
+      // blur on both note and value saves
+      const saveOnBlur=()=>setTimeout(()=>{if(S.editingLogId===lid)_saveLogEdit(p,lid);},120);
+      logIn.onblur=saveOnBlur;
+      const valIn=document.getElementById(`elv-${lid}`);
+      if(valIn)valIn.onblur=saveOnBlur;
+    }
+  }
 }
 
 function vOverview(){
@@ -385,7 +682,13 @@ function bindAll(){
     const el=e.target.closest('[data-act]');if(!el)return;
     const a=el.dataset.act;
     if(a==='toggle-cat'){S.collapsed[el.dataset.cat]=!S.collapsed[el.dataset.cat];render();}
-    else if(a==='sel'){S.selId=el.dataset.proj;S.showEntry=false;S.showAddMs=false;S.showEditNum=false;render();}
+    else if(a==='sel'){
+      // Don't switch project if we're in the middle of an inline edit within a button that bubbles
+      S.selId=el.dataset.proj;
+      S.showEntry=false;S.showAddMs=false;S.showEditNum=false;
+      S.editingField=null;S.editingMsId=null;S.editingLogId=null;S.deleteProjConfirm=false;
+      render();
+    }
     else if(a==='ov-cat'){S.collapsed[el.dataset.cat]=false;renderSidebar();bindAll();}
     else if(a==='start-add-proj'){S.addProjCat=el.dataset.cat;render();}
     else if(a==='cancel-add-proj'){S.addProjCat=null;render();}
@@ -405,6 +708,60 @@ function bindAll(){
     else if(a==='export-data'){exportData();}
     else if(a==='sign-out'){sb.auth.signOut();}
     else if(a==='close-drawer'){const d=document.getElementById('drawer');if(d)d.classList.remove('on');}
+    // ── Feature 1 ──
+    else if(a==='edit-name'){
+      e.stopPropagation();
+      S.editingField='name';S.editingMsId=null;S.editingLogId=null;
+      renderMain();bindAll();
+    }
+    // ── Feature 2 ──
+    else if(a==='edit-desc'){
+      e.stopPropagation();
+      S.editingField='desc';S.editingMsId=null;S.editingLogId=null;
+      renderMain();bindAll();
+    }
+    // ── Feature 3 ──
+    else if(a==='edit-tgt'){
+      e.stopPropagation();
+      S.editingField='tgt';S.editingMsId=null;S.editingLogId=null;
+      renderMain();bindAll();
+    }
+    else if(a==='save-tgt'){saveTgt();}
+    else if(a==='cancel-tgt'){S.editingField=null;renderMain();bindAll();}
+    // ── Feature 4 ──
+    else if(a==='edit-ms'){
+      e.stopPropagation();
+      S.editingMsId=el.dataset.mid;S.editingField=null;S.editingLogId=null;
+      renderMain();bindAll();
+    }
+    else if(a==='save-ms-edit'){
+      const p=S.data.projects.find(x=>x.id===S.selId);
+      _saveMsEdit(p,el.dataset.mid);
+    }
+    else if(a==='cancel-ms-edit'){S.editingMsId=null;renderMain();bindAll();}
+    // ── Feature 5 ──
+    else if(a==='edit-log'){
+      e.stopPropagation();
+      S.editingLogId=el.dataset.lid;S.editingField=null;S.editingMsId=null;
+      renderMain();bindAll();
+    }
+    else if(a==='save-log-edit'){
+      const p=S.data.projects.find(x=>x.id===S.selId);
+      _saveLogEdit(p,el.dataset.lid);
+    }
+    else if(a==='cancel-log-edit'){S.editingLogId=null;renderMain();bindAll();}
+    // ── Feature 6: delete milestone ──
+    else if(a==='del-ms'){e.stopPropagation();showDelMsToast(el.dataset.mid);}
+    // ── Feature 6: delete log entry ──
+    else if(a==='del-log'){e.stopPropagation();showDelLogToast(el.dataset.lid);}
+    // ── Feature 6: delete project ──
+    else if(a==='del-proj'){
+      if(!S.deleteProjConfirm){
+        S.deleteProjConfirm=true;renderMain();bindAll();
+      } else {
+        deleteProject();
+      }
+    }
   };
   app.onchange=e=>{
     const el=e.target.closest('[data-act]');if(!el)return;
@@ -456,6 +813,12 @@ function bindAll(){
     document.querySelectorAll('.pi.drop-above,.pi.drop-below').forEach(el=>el.classList.remove('drop-above','drop-below'));
     _drag=null;
   };
+
+  // Milestone hover: show action buttons
+  document.querySelectorAll('.mi').forEach(mi=>{
+    mi.onmouseenter=()=>{const ac=mi.querySelector('.mi-actions');if(ac){ac.querySelectorAll('.ed-btn').forEach(b=>b.style.opacity='.55');}};
+    mi.onmouseleave=()=>{const ac=mi.querySelector('.mi-actions');if(ac){ac.querySelectorAll('.ed-btn').forEach(b=>b.style.opacity='0');}};
+  });
 }
 
 let _drag=null;
@@ -501,6 +864,120 @@ function showError(msg,onRetry){
   if(!t){t=document.createElement('div');t.id='ftoast';t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--bgf);border:0.5px solid var(--g);border-radius:10px;padding:11px 16px;color:var(--cr);font-size:12.5px;z-index:9999;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.5);';document.body.appendChild(t);}
   t.textContent=msg;t.onclick=()=>{t.remove();if(onRetry)onRetry();};
   setTimeout(()=>{if(t.parentNode)t.style.opacity='.6';},6000);
+}
+
+// ── FEATURE 1: Save name edit ──
+async function _saveNameEdit(p){
+  const inp=document.getElementById('ei-name');
+  if(!inp)return;
+  const name=inp.value.trim();
+  if(!name||name===p.name){S.editingField=null;renderMain();bindAll();return;}
+  p.name=name;S.editingField=null;render();
+  await write('projects','update',{id:p.id,values:{name}});
+}
+
+// ── FEATURE 2: Save description edit ──
+async function _saveDescEdit(p){
+  const inp=document.getElementById('ei-desc');
+  if(!inp)return;
+  const desc=inp.value.trim();
+  if(desc===p.desc){S.editingField=null;renderMain();bindAll();return;}
+  p.desc=desc;S.editingField=null;render();
+  await write('projects','update',{id:p.id,values:{description:desc}});
+}
+
+// ── FEATURE 3: Save target/unit edit ──
+async function saveTgt(){
+  const p=S.data.projects.find(x=>x.id===S.selId);if(!p)return;
+  const cur=parseFloat(document.getElementById('et-cur')?.value);
+  const tgt=parseFloat(document.getElementById('et-tgt')?.value);
+  const unit=(document.getElementById('et-unit')?.value||'').trim();
+  if(isNaN(tgt)||tgt<=0){showError('Target must be a number greater than zero.');return;}
+  if(isNaN(cur)||cur<0){showError('Current value must be zero or more.');return;}
+  p.cur=cur;p.tgt=tgt;p.unit=unit;S.editingField=null;render();
+  await write('projects','update',{id:p.id,values:{cur,tgt,unit}});
+}
+
+// ── FEATURE 4: Save milestone title edit ──
+async function _saveMsEdit(p,mid){
+  const inp=document.getElementById(`ems-${mid}`);
+  if(!inp)return;
+  const title=inp.value.trim();
+  const ms=p.mil.find(x=>x.id===mid);if(!ms)return;
+  if(!title||title===ms.t){S.editingMsId=null;renderMain();bindAll();return;}
+  ms.t=title;S.editingMsId=null;render();
+  await write('milestones','update',{id:mid,values:{title}});
+}
+
+// ── FEATURE 5: Save log entry edit ──
+async function _saveLogEdit(p,lid){
+  const noteIn=document.getElementById(`eln-${lid}`);
+  if(!noteIn)return;
+  const note=noteIn.value.trim();
+  const entry=p.log.find(x=>x.id===lid);if(!entry)return;
+  if(!note){S.editingLogId=null;renderMain();bindAll();return;}
+  const valIn=document.getElementById(`elv-${lid}`);
+  let val=entry.val;
+  if(valIn&&valIn.value!==''){
+    const parsed=parseFloat(valIn.value);
+    if(!isNaN(parsed))val=parsed;
+  }
+  entry.note=note;entry.val=val;
+  S.editingLogId=null;render();
+  await write('log_entries','update',{id:lid,values:{note,val}});
+}
+
+// ── FEATURE 6: Milestone delete ──
+function showDelMsToast(mid){
+  _removeConfToast();
+  const t=document.createElement('div');t.id='conf-toast';t.className='conf-toast';
+  t.innerHTML=`<span class="conf-toast-msg">Remove this milestone?</span>
+    <button class="conf-toast-yes" id="ct-yes">Yes</button>
+    <button class="conf-toast-no" id="ct-no">Cancel</button>`;
+  document.body.appendChild(t);
+  document.getElementById('ct-yes').onclick=()=>{_removeConfToast();deleteMilestone(mid);};
+  document.getElementById('ct-no').onclick=()=>_removeConfToast();
+  // Auto-dismiss after 8s
+  setTimeout(()=>_removeConfToast(),8000);
+}
+
+async function deleteMilestone(mid){
+  const p=S.data.projects.find(x=>x.id===S.selId);if(!p)return;
+  p.mil=p.mil.filter(m=>m.id!==mid);render();
+  await write('milestones','update',{id:mid,values:{deleted_at:new Date().toISOString()}});
+}
+
+// ── FEATURE 6: Log entry delete ──
+function showDelLogToast(lid){
+  _removeConfToast();
+  const t=document.createElement('div');t.id='conf-toast';t.className='conf-toast';
+  t.innerHTML=`<span class="conf-toast-msg">Remove this log entry?</span>
+    <button class="conf-toast-yes" id="ct-yes">Yes</button>
+    <button class="conf-toast-no" id="ct-no">Cancel</button>`;
+  document.body.appendChild(t);
+  document.getElementById('ct-yes').onclick=()=>{_removeConfToast();deleteLogEntry(lid);};
+  document.getElementById('ct-no').onclick=()=>_removeConfToast();
+  setTimeout(()=>_removeConfToast(),8000);
+}
+
+async function deleteLogEntry(lid){
+  const p=S.data.projects.find(x=>x.id===S.selId);if(!p)return;
+  p.log=p.log.filter(l=>l.id!==lid);render();
+  await write('log_entries','update',{id:lid,values:{deleted_at:new Date().toISOString()}});
+}
+
+// ── FEATURE 6: Project delete ──
+async function deleteProject(){
+  const p=S.data.projects.find(x=>x.id===S.selId);if(!p)return;
+  const id=p.id;
+  S.data.projects=S.data.projects.filter(x=>x.id!==id);
+  S.selId=null;S.deleteProjConfirm=false;
+  render();
+  await write('projects','update',{id,values:{deleted_at:new Date().toISOString()}});
+}
+
+function _removeConfToast(){
+  const t=document.getElementById('conf-toast');if(t)t.remove();
 }
 
 async function saveProj(catId){
