@@ -53,6 +53,15 @@ export const undo_last_write: Tool = {
       return { undone: { event_id: last.id, op: 'update', table: t, row_id: id }, message: `Reverted update on ${t}.` };
     }
 
+    if (last.op === 'soft_delete') {
+      await sql`update ${sql(t)} set deleted_at = null where id = ${id} and user_id = ${NOURIN_USER_ID}`;
+      await logEvent({
+        tool: 'undo_last_write', op: 'undo', table_name: t, row_id: id,
+        before: last.after, after: { deleted_at: null }
+      });
+      return { undone: { event_id: last.id, op: 'soft_delete', table: t, row_id: id }, message: `Restored ${t} (deleted_at cleared).` };
+    }
+
     return { undone: null, message: `Op "${last.op}" is not yet supported by undo.` };
   },
 };
