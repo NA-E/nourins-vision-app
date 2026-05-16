@@ -1,0 +1,76 @@
+name: Daily Claude & Anthropic Email Digest
+
+on:
+  schedule:
+    # Every day at 7:00 AM UTC (8 AM UK / 10 AM Gulf)
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+    # Also allows manual run from GitHub Actions tab
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Write Gmail MCP config
+        run: |
+          mkdir -p ~/.claude
+          cat > ~/.claude/settings.json << 'EOF'
+          {
+            "mcpServers": {
+              "Gmail": {
+                "type": "http",
+                "url": "${{ secrets.GMAIL_MCP_URL }}",
+                "headers": {
+                  "Authorization": "Bearer ${{ secrets.GMAIL_MCP_TOKEN }}"
+                }
+              }
+            }
+          }
+          EOF
+
+      - name: Run digest prompt
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          TODAY=$(date '+%A, %d %B %Y')
+          DAYNAME=$(date '+%A')
+
+          claude --print --no-cache << PROMPT
+          Today is $TODAY.
+
+          Search Gmail for emails mentioning Claude or Anthropic received in the last 24 hours.
+          Use the mcp__Gmail__search_threads tool with query: (Claude OR Anthropic) newer_than:1d -in:sent
+          Also search: subject:(Claude OR Anthropic) newer_than:1d
+
+          For each thread found, fetch the full content using mcp__Gmail__get_thread.
+
+          Filter out purely promotional emails (course sales, upgrade pitches, webinar sign-up nudges)
+          that contain no substantive Claude or Anthropic news, product info, or tips.
+
+          From what remains, write a well-formatted HTML digest email and create it as a Gmail draft
+          using mcp__Gmail__create_draft with:
+          - to: ["eka.nourin@gmail.com"]
+          - subject: "☁️ Your Daily Claude & Anthropic Digest — $TODAY"
+          - htmlBody: a clean HTML email with dark background (#0f0b1a), gold headings (#d4a843),
+            cream body text (#f0ead8), max-width 640px centered.
+
+          Sections to include (only if content exists):
+          🏦 Business & Strategy
+          🛠️ Products & Features
+          💳 Pricing & Plans
+          🤖 Agents & Automation
+          📌 Tips & Tools
+          🗓️ Upcoming Events
+
+          Each item: headline (bold), 2-4 sentence summary, source line.
+          Sign off: "Have a great $DAYNAME, Nourin."
+          Footer: "Auto-generated daily digest · Claude & Anthropic content only"
+          PROMPT
