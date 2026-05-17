@@ -1,0 +1,37 @@
+name: Daily Claude & Anthropic Digest
+
+on:
+  schedule:
+    # 07:00 UTC every day — adjust to your timezone
+    # 07:00 UTC = 10:00 Dubai / Gulf time (UTC+3)
+    # Change the hour here: https://crontab.guru
+    - cron: "0 7 * * *"
+
+  # Run manually from the GitHub Actions tab whenever you want
+  workflow_dispatch:
+
+jobs:
+  send-digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install anthropic httpx
+
+      - name: Run digest
+        env:
+          ANTHROPIC_API_KEY:   ${{ secrets.ANTHROPIC_API_KEY }}
+          GMAIL_CLIENT_ID:     ${{ secrets.GMAIL_CLIENT_ID }}
+          GMAIL_CLIENT_SECRET: ${{ secrets.GMAIL_CLIENT_SECRET }}
+          GMAIL_REFRESH_TOKEN: ${{ secrets.GMAIL_REFRESH_TOKEN }}
+          DIGEST_EMAIL:        ${{ secrets.DIGEST_EMAIL }}
+        run: python scripts/daily_claude_digest.py
